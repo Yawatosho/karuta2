@@ -291,7 +291,15 @@ function buildPostURL(name, score, extraParams = {}) {
   return `${RANKING_BASE}?${qs.toString()}`;
 }
 
-function fetchJSONP(url, timeout = 12000) {
+const JSONP_AUTHUSER_FALLBACKS = [null, '0', '1', '2', '3'];
+
+function withAuthuserFallback(url, authuser) {
+  if (authuser === null || /[?&]authuser=/.test(url)) return url;
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}authuser=${encodeURIComponent(authuser)}`;
+}
+
+function fetchJSONPAttempt(url, timeout) {
   return new Promise((resolve, reject) => {
     const callbackName = `__karutaJsonp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const separator = url.includes('?') ? '&' : '?';
@@ -316,12 +324,25 @@ function fetchJSONP(url, timeout = 12000) {
 
     timer = setTimeout(() => {
       cleanup();
-      reject(new Error('JSONP request timed out'));
+      reject(new Error(`JSONP request timed out: ${script.src}`));
     }, timeout);
 
     script.src = `${url}${separator}callback=${encodeURIComponent(callbackName)}`;
     document.head.appendChild(script);
   });
+}
+
+async function fetchJSONP(url, timeout = 5000) {
+  const errors = [];
+  for (const authuser of JSONP_AUTHUSER_FALLBACKS) {
+    const attemptUrl = withAuthuserFallback(url, authuser);
+    try {
+      return await fetchJSONPAttempt(attemptUrl, timeout);
+    } catch (error) {
+      errors.push(error.message);
+    }
+  }
+  throw new Error(errors.join(' / '));
 }
 
 // ===== タブ付きランキング描画 =====
