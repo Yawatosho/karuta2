@@ -45,7 +45,7 @@ let perfectGame = true;
 
 // ===== GASエンドポイント / データURL =====
 const NDC_JSON_URL = "https://raw.githubusercontent.com/Yawatosho/karuta/refs/heads/main/ndc.json";
-const RANKING_BASE = "https://script.google.com/macros/s/AKfycbwXzTXXfRNm-PxZiQIRiNFyKIjPQic2picz-qPBnzTLV3abRVqE8AOnPq4gBIPsp5VApw/exec";
+const RANKING_BASE = "https://script.google.com/macros/s/AKfycbz592Gzh0nHa2zbyHpn4qnospBpyr78k2rlSWE-M3Brl7xLpDTFKvc8B5-J_TSIJGu4SA/exec";
 
 // ===== ゲーム状態 =====
 let cards = [];
@@ -311,7 +311,7 @@ function fetchJSONP(url, timeout = 12000) {
 
     script.onerror = () => {
       cleanup();
-      reject(new Error('JSONP request failed'));
+      reject(new Error(`JSONP request failed: ${script.src}`));
     };
 
     timer = setTimeout(() => {

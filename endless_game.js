@@ -45,7 +45,7 @@ let perfectGame = true;
 
 // ===== GASエンドポイント / データURL =====
 const NDC_JSON_URL = "https://raw.githubusercontent.com/Yawatosho/karuta/refs/heads/main/ndc.json";
-const RANKING_BASE = "https://script.google.com/macros/s/AKfycbx6uj1UaTuUy2wD-AaOOVRHIMvbCgq3am8MVww7G-_lwxFbRdS-bfUXNPKP-qT2qO99/exec";
+const RANKING_BASE = "https://script.google.com/macros/s/AKfycbydFpKWpCDVO0pz0Hu2Da2hhurguQujeBSr4FzCwtaZxJVzo2eTz-Ibjb_XOclvJp9m/exec";
 const ENDLESS_RANKING_PARAMS = { mode: 'endless' };
 const WAVE_ROUNDS = 10;
 const MAX_LIVES = 3;
@@ -320,7 +320,7 @@ function fetchJSONP(url, timeout = 12000) {
 
     script.onerror = () => {
       cleanup();
-      reject(new Error('JSONP request failed'));
+      reject(new Error(`JSONP request failed: ${script.src}`));
     };
 
     timer = setTimeout(() => {
