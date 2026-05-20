@@ -291,6 +291,39 @@ function buildPostURL(name, score, extraParams = {}) {
   return `${RANKING_BASE}?${qs.toString()}`;
 }
 
+function fetchJSONP(url, timeout = 12000) {
+  return new Promise((resolve, reject) => {
+    const callbackName = `__karutaJsonp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const separator = url.includes('?') ? '&' : '?';
+    const script = document.createElement('script');
+    let timer = null;
+
+    function cleanup() {
+      if (timer) clearTimeout(timer);
+      delete window[callbackName];
+      script.remove();
+    }
+
+    window[callbackName] = data => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error('JSONP request failed'));
+    };
+
+    timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('JSONP request timed out'));
+    }, timeout);
+
+    script.src = `${url}${separator}callback=${encodeURIComponent(callbackName)}`;
+    document.head.appendChild(script);
+  });
+}
+
 // ===== タブ付きランキング描画 =====
 const rankingState = {
   // id: { period: 'day'|'month'|'all', ym: 'YYYY-MM', req: number }
@@ -377,8 +410,7 @@ function fetchAndRenderRanking(targetId, period='day', ym=getTodayYMDJST(), reqI
     url = `${url}${sep}nocache=1&t=${Date.now()}`;
   }
 
-  fetch(url)
-    .then(r => r.json())
+  fetchJSONP(url)
     .then(data => {
       const st = rankingState[targetId];
       if (!st) return;
@@ -495,9 +527,7 @@ async function postHighScoreViaGET(name, score, options = { autoRefresh: true })
   }
   const url = buildPostURL(safeName, score);
   try {
-    const r = await fetch(url);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
+    const data = await fetchJSONP(url);
     if (data && data.result === 'success') {
       try { localStorage.setItem(LAST_PLAYER_NAME_KEY, safeName); } catch(e) {}
       if (autoRefresh) {
@@ -1245,11 +1275,7 @@ async function handleHighScoreSubmit(e) {
 // ===== 入賞判定（クライアント側・当日だけ） =====
 function checkHighScore(currentScore) {
   const url = buildRankingURLByPeriod('day', getTodayYMJST(), 10);
-  return fetch(url)
-    .then(r => {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
+  return fetchJSONP(url)
     .then(data => {
       let rows = topN(normalizeHighScores(data.highScores), 10);
       if (rows.length < 10) return true;
