@@ -1252,7 +1252,7 @@ ul { padding-left: 1.4em; }
     min-height: 52px;
     padding: 6px 5px;
     border-radius: 6px;
-    font-size: 0.64rem;
+    font-size: 0.65rem;
     line-height: 1.22;
   }
 }
@@ -1260,7 +1260,7 @@ ul { padding-left: 1.4em; }
 @media (max-width: 380px) {
   .card {
     min-height: 48px;
-    font-size: 0.58rem;
+    font-size: 0.65rem;
   }
 
   #scoreDisplay,
