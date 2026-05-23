@@ -1,3 +1,4 @@
+(function () {
 const ROUND_TIME_MS = 15000;
 const EARLY_WINDOW_MS = 6000;
 const CPU_CLICK_ANIM_MS = 230;
@@ -147,27 +148,18 @@ const CORRECT_SOUND_RATE_STEP = 0.08;
 const CORRECT_SOUND_MAX_RATE = 1.6;
 
 function applyTheme() {
-  document.documentElement.dataset.theme = 'dark';
-  try { localStorage.setItem(THEME_KEY, 'dark'); } catch (e) {}
+  document.documentElement.dataset.theme = 'light';
+  try { localStorage.setItem(THEME_KEY, 'light'); } catch (e) {}
 }
 
 try {
   applyTheme();
 } catch (e) {
-  document.documentElement.dataset.theme = 'dark';
+  document.documentElement.dataset.theme = 'light';
 }
 
 if (soundToggle) soundToggle.addEventListener('change', e => { soundEnabled = e.target.checked; });
 if (cpuLevelSelect) cpuLevelSelect.addEventListener('change', e => { cpuLevel = e.target.value; });
-startButton.addEventListener('click', startGame);
-quitButton.addEventListener('click', () => quitGame(false));
-restartButton.addEventListener('click', resetGame);
-postButton.addEventListener('click', postToX);
-if (rankingButton) rankingButton.addEventListener('click', () => showModal(rankingModal));
-howToButton.addEventListener('click', () => showModal(howToModal));
-document.querySelectorAll('[data-close-modal]').forEach(button => {
-  button.addEventListener('click', () => closeModal(document.getElementById(button.dataset.closeModal)));
-});
 
 function esc(s) {
   return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
@@ -268,7 +260,7 @@ function pulseBody(className, duration = 420) {
   setTimeout(() => document.body.classList.remove(className), duration);
 }
 
-function burstFromElement(el, color = '#ffd95f', count = 18) {
+function burstFromElement(el, color = '#2f6f7b', count = 18) {
   if (!el || !fxLayer) return;
   const rect = el.getBoundingClientRect();
   const x = rect.left + rect.width / 2;
@@ -289,7 +281,7 @@ function burstFromElement(el, color = '#ffd95f', count = 18) {
   }
 }
 
-function popText(text, el, color = '#ffd95f') {
+function popText(text, el, color = '#2f6f7b') {
   if (!el || !fxLayer) return;
   const rect = el.getBoundingClientRect();
   const label = document.createElement('span');
@@ -316,6 +308,18 @@ function setMessage(kind, main = '', sub = '') {
 function updateScoreDisplays() {
   scoreElPlayer.innerText = `YOU: ${playerScore.toLocaleString()}pt`;
   scoreElCPU.innerText = `CPU: ${cpuScore.toLocaleString()}pt`;
+}
+
+function updateTimeDisplay(remainingSeconds, totalSeconds = ROUND_TIME_MS / 1000) {
+  const remaining = Math.max(0, remainingSeconds);
+  const progress = Math.max(0, Math.min(100, (remaining / totalSeconds) * 100));
+  timeEl.textContent = `TIME: ${remaining.toFixed(1)} sec`;
+  timeEl.style.setProperty('--time-progress', `${progress}%`);
+  timeEl.classList.toggle('danger', remaining <= 5);
+}
+
+function resetTimeDisplay() {
+  updateTimeDisplay(ROUND_TIME_MS / 1000);
 }
 
 function updateComboDisplay() {
@@ -410,7 +414,7 @@ function setPlayingControls() {
 function setFinishedControls() {
   document.body.classList.remove('game-playing');
   hideGameArea();
-  startButton.style.display = 'none';
+  startButton.style.display = 'inline-block';
   hiscoreButton.style.display = 'inline-block';
   if (cpuButton) cpuButton.style.display = 'inline-block';
   if (endlessButton) endlessButton.style.display = 'inline-block';
@@ -419,7 +423,7 @@ function setFinishedControls() {
   if (cpuLevelPanel) cpuLevelPanel.style.display = 'flex';
   if (cpuLevelSelect) cpuLevelSelect.disabled = false;
   quitButton.style.display = 'none';
-  restartButton.style.display = 'block';
+  restartButton.style.display = 'none';
   postButton.style.display = 'block';
 }
 
@@ -486,8 +490,7 @@ function initGame(fetchedCards, runId = gameRunId) {
   earlyEligibleCPU = true;
   updateScoreDisplays();
   updateComboDisplay();
-  timeEl.innerText = 'TIME: 15.0 sec';
-  timeEl.classList.remove('danger');
+  resetTimeDisplay();
   readingEl.style.display = 'none';
   resultDisplayEl.style.display = 'none';
   battleResultEl.innerHTML = '';
@@ -533,8 +536,7 @@ function quitGame(playResetSound = false) {
   readingEl.style.display = 'none';
   cardGrid.innerHTML = '';
   cardGrid.style.display = 'flex';
-  timeEl.innerText = 'TIME: 15.0 sec';
-  timeEl.classList.remove('danger');
+  resetTimeDisplay();
   resultDisplayEl.style.display = 'none';
   battleResultEl.innerHTML = '';
   setMessage('', '', '');
@@ -617,8 +619,7 @@ function nextRound() {
   timeDisplayInterval = setInterval(() => {
     const elapsed = (Date.now() - roundStartTime) / 1000;
     const remaining = Math.max(0, (ROUND_TIME_MS / 1000) - elapsed);
-    timeEl.innerText = `TIME: ${remaining.toFixed(1)} sec`;
-    timeEl.classList.toggle('danger', remaining <= 5);
+    updateTimeDisplay(remaining);
   }, 100);
 
   readingTimeouts.push(setTimeout(() => readDigits(currentReadingCard.ndc.toString()), 1000));
@@ -630,7 +631,7 @@ function roundTimeout() {
     perfectGame = false;
     roundActive = false;
     clearInterval(timeDisplayInterval);
-    timeEl.classList.remove('danger');
+    updateTimeDisplay(0);
     setMessage('warning', 'TIME OUT', '');
     roundResultTimeout = setTimeout(nextRound, 2000);
   }
@@ -738,8 +739,8 @@ function handleCorrect(cardEl, isCPU, t, isEarlyEffective) {
   else playerScore += roundScore;
   updateScoreDisplays();
 
-  burstFromElement(cardEl, kimarijiBonus > 0 ? '#ffd95f' : '#69ffb3', kimarijiBonus > 0 ? 28 : 18);
-  popText(isCPU ? 'CPU GET!' : 'GET!', cardEl, kimarijiBonus > 0 ? '#ffd95f' : '#69ffb3');
+  burstFromElement(cardEl, '#2f6f7b', kimarijiBonus > 0 ? 28 : 18);
+  popText(isCPU ? 'CPU GET!' : 'GET!', cardEl, '#2f6f7b');
   cardEl.classList.add('correct');
   setTimeout(() => {
     cardEl.style.visibility = 'hidden';
@@ -784,8 +785,8 @@ function handleMiss(cardEl, isCPU) {
     setMessage('warning', isCPU ? 'CPU MISS' : 'MISS', 'SCORE -500pt');
   }, 160);
 
-  burstFromElement(cardEl, '#ff4c6a', 10);
-  popText(isCPU ? 'CPU MISS' : 'MISS', cardEl, '#ff4c6a');
+  burstFromElement(cardEl, '#9d4f58', 10);
+  popText(isCPU ? 'CPU MISS' : 'MISS', cardEl, '#9d4f58');
   cardEl.classList.remove('shake');
   void cardEl.offsetWidth;
   cardEl.classList.add('shake');
@@ -976,4 +977,14 @@ function postToX() {
   window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(postText)}`, '_blank');
 }
 
-setOpeningControls();
+window.karutaModes = window.karutaModes || {};
+window.karutaModes.cpu = {
+  startGame,
+  quitGame: () => quitGame(false),
+  resetGame,
+  postToX,
+  openRankingModal: () => showModal(rankingModal),
+  showHowTo: () => showModal(howToModal),
+  refreshLanding: setOpeningControls
+};
+})();

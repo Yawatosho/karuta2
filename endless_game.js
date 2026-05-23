@@ -1,3 +1,4 @@
+(function () {
 /* =========================
    NDCかるた — 統合スクリプト（タブ付きランキング対応版）
    ========================= */
@@ -9,14 +10,14 @@ soundToggle.addEventListener('change', e => { soundEnabled = e.target.checked; }
 const THEME_KEY = 'karutaTheme';
 
 function applyTheme() {
-  document.documentElement.dataset.theme = 'dark';
-  try { localStorage.setItem(THEME_KEY, 'dark'); } catch(e) {}
+  document.documentElement.dataset.theme = 'light';
+  try { localStorage.setItem(THEME_KEY, 'light'); } catch(e) {}
 }
 
 try {
   applyTheme();
 } catch(e) {
-  document.documentElement.dataset.theme = 'dark';
+  document.documentElement.dataset.theme = 'light';
 }
 
 const correctSound = document.getElementById('correctSound');
@@ -49,6 +50,7 @@ const RANKING_BASE = "https://script.google.com/macros/s/AKfycbydFpKWpCDVO0pz0Hu
 const ENDLESS_RANKING_PARAMS = { mode: 'endless' };
 const WAVE_ROUNDS = 10;
 const MAX_LIVES = 3;
+const ROUND_TIME_MS = 15000;
 
 // ===== ゲーム状態 =====
 let cards = [];
@@ -119,19 +121,6 @@ const highScoreEntryStatus = document.getElementById('highScoreEntryStatus');
 // 最後に使ったプレイヤー名
 const LAST_PLAYER_NAME_KEY = 'lastPlayerName';
 
-startButton.addEventListener('click', startGame);
-quitButton.addEventListener('click', quitGame);
-restartButton.addEventListener('click', resetGame);
-postButton.addEventListener('click', postToX);
-rankingButton.addEventListener('click', openRankingModal);
-howToButton.addEventListener('click', () => showModal(howToModal));
-if (highScoreForm) highScoreForm.addEventListener('submit', handleHighScoreSubmit);
-document.querySelectorAll('[data-close-modal]').forEach(button => {
-  button.addEventListener('click', () => {
-    closeModal(document.getElementById(button.dataset.closeModal));
-  });
-});
-
 // ===== 演出 =====
 function pulseBody(className, duration = 420) {
   document.body.classList.remove(className);
@@ -140,7 +129,7 @@ function pulseBody(className, duration = 420) {
   setTimeout(() => document.body.classList.remove(className), duration);
 }
 
-function burstFromElement(el, color = '#ffd95f', count = 18) {
+function burstFromElement(el, color = '#2f6f7b', count = 18) {
   if (!el || !fxLayer) return;
   const rect = el.getBoundingClientRect();
   const x = rect.left + rect.width / 2;
@@ -161,7 +150,7 @@ function burstFromElement(el, color = '#ffd95f', count = 18) {
   }
 }
 
-function popText(text, el, color = '#ffd95f') {
+function popText(text, el, color = '#2f6f7b') {
   if (!el || !fxLayer) return;
   const rect = el.getBoundingClientRect();
   const label = document.createElement('span');
@@ -198,6 +187,18 @@ function setMessage(kind, main = '', sub = '') {
   const mainHtml = main ? `<span class="msg-main">${esc(main)}</span>` : '';
   const subHtml = sub ? `<span class="msg-sub">${esc(sub)}</span>` : '';
   messageEl.innerHTML = `${mainHtml}${subHtml}`;
+}
+
+function updateTimeDisplay(remainingSeconds, totalSeconds = ROUND_TIME_MS / 1000) {
+  const remaining = Math.max(0, remainingSeconds);
+  const progress = Math.max(0, Math.min(100, (remaining / totalSeconds) * 100));
+  timeEl.textContent = `TIME: ${remaining.toFixed(1)} sec`;
+  timeEl.style.setProperty('--time-progress', `${progress}%`);
+  timeEl.classList.toggle('danger', remaining <= 5);
+}
+
+function resetTimeDisplay() {
+  updateTimeDisplay(ROUND_TIME_MS / 1000);
 }
 
 function openRankingModal() {
@@ -419,7 +420,7 @@ function renderRankingWithTabs(targetId, rows, period='day', ym=getTodayYMJST(),
 }
 
 // タブクリック時：即タブを切り替え→NOW LOADING→取得→描画
-window.rankTabClick = function(targetId, period) {
+function rankTabClick(targetId, period) {
   const st = (rankingState[targetId] ||= { period: 'day', ym: getTodayYMDJST(), req: 0 });
   st.period = period;
   if (period === 'month' && (!st.ym || !/^\d{4}-\d{2}$/.test(st.ym))) st.ym = getTodayYMDJST();
@@ -428,7 +429,7 @@ window.rankTabClick = function(targetId, period) {
 
   st.req++;
   fetchAndRenderRanking(targetId, st.period, st.ym, st.req);
-};
+}
 
 // 取得関数（silent/nocache対応）
 function fetchAndRenderRanking(targetId, period='day', ym=getTodayYMDJST(), reqId=null, options = {}) {
@@ -589,12 +590,6 @@ async function postHighScoreViaGET(name, score, options = { autoRefresh: true })
 }
 
 // ===== ページロード時 =====
-window.addEventListener('load', function() {
-  displayHighScores();           // 上部ランキング（デイリーデフォルト）
-  displayLocalHighScores();      // ローカルハイスコア
-  displayHighScoreTitle();       // 称号
-});
-
 // ===== ndc.json セッションキャッシュ =====
 const NDC_CACHE_KEY = 'ndc_json_cache_v1';
 function invalidateNdcCache() { try { sessionStorage.removeItem(NDC_CACHE_KEY); } catch(e){} }
@@ -673,8 +668,7 @@ function resetGame() {
   scoreEl.innerText     = 'SCORE: 0pt';
   updateWaveDisplay();
   updateLifeDisplay();
-  timeEl.innerText      = 'TIME: 15.0 sec';
-  timeEl.classList.remove('danger');
+  resetTimeDisplay();
   comboEl.innerText     = '';
   startButton.style.display = 'inline-block';  // ★GAME START 再表示
   if (hiscoreButton) hiscoreButton.style.display = 'inline-block';
@@ -733,8 +727,7 @@ function quitGame() {
   scoreEl.innerText = 'SCORE: 0pt';
   updateWaveDisplay();
   updateLifeDisplay();
-  timeEl.innerText = 'TIME: 15.0 sec';
-  timeEl.classList.remove('danger');
+  resetTimeDisplay();
   comboEl.innerText = '';
 
   startButton.style.display = 'inline-block';
@@ -766,7 +759,14 @@ function startGame() {
   if (endlessButton) endlessButton.style.display = 'none';
   rankingButton.style.display = 'none';
   howToButton.style.display = 'none';
+  scoreEl.style.display = 'block';
+  if (waveEl) waveEl.style.display = 'block';
+  if (lifeEl) lifeEl.style.display = 'block';
+  timeEl.style.display = 'block';
+  comboEl.style.display = 'block';
   quitButton.style.display  = 'block';
+  restartButton.style.display = 'none';
+  postButton.style.display = 'none';
   document.getElementById('rankingWrapper').style.display = 'none';
   setMessage('ready', 'LOADOUT', '');
   fetchCards().then(fetchedCards => {
@@ -791,6 +791,7 @@ function initGame(fetchedCards, runId = gameRunId) {
   updateScoreDisplay();
   updateWaveDisplay();
   updateLifeDisplay();
+  resetTimeDisplay();
   earlyCombo = 0;
   updateComboDisplay();
   perfectGame = true;
@@ -880,7 +881,7 @@ function nextRound() {
   readingComplete = false;
   bonusEligible = true;
   enableCardClicks();
-  setMessage('round', `WAVE ${wave} / ROUND ${round}`, '');
+  setMessage('round', `ROUND ${round}`, '');
 
   let availableCards = cards.filter(card => !card.used);
   currentReadingCard = availableCards[Math.floor(Math.random() * availableCards.length)];
@@ -892,13 +893,12 @@ function nextRound() {
   }
 
   roundStartTime = Date.now();
-  roundTimer = setTimeout(roundTimeout, 15000);
+  roundTimer = setTimeout(roundTimeout, ROUND_TIME_MS);
 
   timeDisplayInterval = setInterval(() => {
     let elapsed = (Date.now() - roundStartTime) / 1000;
-    let remaining = Math.max(0, 15 - elapsed);
-    timeEl.innerText = 'TIME: ' + remaining.toFixed(1) + ' sec';
-    timeEl.classList.toggle('danger', remaining <= 5);
+    let remaining = Math.max(0, (ROUND_TIME_MS / 1000) - elapsed);
+    updateTimeDisplay(remaining);
   }, 100);
 
   readingTimeouts.push(setTimeout(() => { readDigits(currentReadingCard.ndc.toString()); }, 1000));
@@ -910,6 +910,7 @@ function roundTimeout() {
     roundActive = false;
     loseLife();
     clearInterval(timeDisplayInterval);
+    updateTimeDisplay(0);
     setMessage('warning', lives <= 0 ? 'LIFE OUT' : 'TIME OUT', lives <= 0 ? 'GAME OVER' : `LIFE ${lives}/${MAX_LIVES}`);
     clearTimeout(roundResultTimeout);
     roundResultTimeout = setTimeout(lives <= 0 ? endGame : nextRound, 2000);
@@ -1039,8 +1040,8 @@ function selectCard(e) {
 
     const cardEl = hitCardEl;
     if (cardEl) {
-      burstFromElement(cardEl, bonus > 0 ? '#ffd95f' : '#69ffb3', bonus > 0 ? 28 : 18);
-      popText(bonus > 0 ? 'BONUS!' : 'GET!', cardEl, bonus > 0 ? '#ffd95f' : '#69ffb3');
+      burstFromElement(cardEl, '#2f6f7b', bonus > 0 ? 28 : 18);
+      popText(bonus > 0 ? 'BONUS!' : 'GET!', cardEl, '#2f6f7b');
       cardEl.classList.add('correct');
       setTimeout(() => {
         cardEl.style.visibility = 'hidden';
@@ -1076,8 +1077,8 @@ function selectCard(e) {
 
     const cardEl = hitCardEl;
     if (cardEl) {
-      burstFromElement(cardEl, '#ff4c6a', 10);
-      popText('MISS', cardEl, '#ff4c6a');
+      burstFromElement(cardEl, '#9d4f58', 10);
+      popText('MISS', cardEl, '#9d4f58');
       cardEl.classList.remove('shake'); void cardEl.offsetWidth;
       cardEl.classList.add('shake');
       setTimeout(() => { cardEl.classList.remove('shake'); }, 300);
@@ -1142,7 +1143,15 @@ function getBonusForNdc(ndc) { return bonusTable.find(item => item.ndc === ndc);
 // ===== UIユーティリティ =====
 function updateScoreDisplay() { scoreEl.innerText = 'SCORE: ' + score.toLocaleString() + 'pt'; }
 function updateWaveDisplay() { if (waveEl) waveEl.innerText = 'WAVE: ' + wave; }
-function updateLifeDisplay() { if (lifeEl) lifeEl.innerText = 'LIFE: ' + lives + '/' + MAX_LIVES; }
+function updateLifeDisplay() {
+  if (!lifeEl) return;
+  lifeEl.setAttribute('aria-label', `LIFE ${lives}/${MAX_LIVES}`);
+  const hearts = Array.from({ length: MAX_LIVES }, (_, index) => {
+    const filled = index < lives;
+    return `<span class="life-heart ${filled ? 'is-full' : 'is-empty'}" aria-hidden="true">${filled ? '♥' : '♡'}</span>`;
+  }).join('');
+  lifeEl.innerHTML = `<span class="life-label">LIFE</span><span class="life-hearts">${hearts}</span>`;
+}
 function loseLife() {
   waveMisses++;
   lives = Math.max(0, lives - 1);
@@ -1277,11 +1286,12 @@ function endGame() {
   comboEl.style.display   = 'none';
   rankingButton.style.display = 'inline-block';
   howToButton.style.display = 'inline-block';
+  startButton.style.display = 'inline-block';
   if (hiscoreButton) hiscoreButton.style.display = 'inline-block';
   cpuButton.style.display = 'inline-block';
   if (endlessButton) endlessButton.style.display = 'inline-block';
   quitButton.style.display = 'none';
-  restartButton.style.display = 'block';
+  restartButton.style.display = 'none';
   postButton.style.display    = 'block';
 
   setMessage('finish', 'GAME OVER', `SCORE ${score.toLocaleString()}pt / WAVE ${wave}`);
@@ -1417,3 +1427,23 @@ function checkHighScore(currentScore) {
       return false;
     });
 }
+
+function refreshLanding() {
+  displayHighScores();
+  displayLocalHighScores();
+  displayHighScoreTitle();
+}
+
+window.karutaModes = window.karutaModes || {};
+window.karutaModes.endless = {
+  startGame,
+  quitGame,
+  resetGame,
+  postToX,
+  openRankingModal,
+  showHowTo: () => showModal(howToModal),
+  handleHighScoreSubmit,
+  rankTabClick,
+  refreshLanding
+};
+})();

@@ -11,10 +11,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-  <script src="game.js" defer></script>
+  <link rel="stylesheet" href="styles.css?v=hudpolish2">
+  <script src="mode_loader.js?v=hudpolish2" defer></script>
 </head>
-<body>
+<body data-mode="hiscore">
   <main id="main" class="arena">
     <div class="ambient-lines" aria-hidden="true"></div>
     <div class="scan-grid" aria-hidden="true"></div>
@@ -38,19 +38,31 @@
       </div>
 
       <div id="karuta">
+        <div id="cpuCursor" class="cpu-cursor" aria-hidden="true"></div>
+
         <div class="mode-actions" aria-label="モード選択">
-          <a id="hiscoreButton" class="active" href="index.html">HI SCORE MODE</a>
-          <a id="cpuButton" href="karuta_cpu.html">VS CPU MODE</a>
-          <a id="endlessButton" href="karuta_endless.html">ENDLESS MODE</a>
+          <a id="hiscoreButton" class="active" href="index.html" data-mode-target="hiscore">HI SCORE MODE</a>
+          <a id="cpuButton" href="index.html" data-mode-target="cpu">VS CPU MODE</a>
+          <a id="endlessButton" href="index.html" data-mode-target="endless">ENDLESS MODE</a>
         </div>
+
         <p class="action-row">
           <button id="rankingButton" type="button">RANKING</button>
-          <button id="startButton">GAME START</button>
+          <button id="startButton" type="button">GAME START</button>
           <button id="howToButton" type="button">HOW TO PLAY</button>
           <button id="quitButton" type="button">QUIT</button>
-          <button id="restartButton">RETRY</button>
-          <button id="postButton">結果をXにポストする</button>
+          <button id="restartButton" type="button">RETRY</button>
         </p>
+
+        <section class="cpu-level-panel" aria-label="CPU難易度">
+          <label for="cpuLevel">CPU LEVEL</label>
+          <select id="cpuLevel">
+            <option value="beginner">風の目録使い / Beginner</option>
+            <option selected value="normal">分類の魔術師 / Normal</option>
+            <option value="expert">デジタルライブラリアン / Expert</option>
+            <option value="god">至高の司書 / God</option>
+          </select>
+        </section>
 
         <section class="reader-panel is-hidden" aria-label="読み札">
           <div id="countdownDisplay" class="countdown-display" aria-live="polite"></div>
@@ -60,7 +72,11 @@
             <div id="digit3" class="digit"><div class="num">&nbsp;</div></div>
           </div>
           <div class="hud">
+            <div id="waveDisplay">WAVE: 1</div>
+            <div id="lifeDisplay">LIFE: 3</div>
             <div id="scoreDisplay">SCORE: 0pt</div>
+            <div id="scoreDisplayPlayer">YOU: 0pt</div>
+            <div id="scoreDisplayCPU">CPU: 0pt</div>
             <div id="comboDisplay"></div>
             <div id="timeDisplay">TIME: 15.0 sec</div>
           </div>
@@ -90,6 +106,7 @@
           <h2>RANKING</h2>
           <button class="modal-close" type="button" data-close-modal="rankingModal" aria-label="閉じる">×</button>
         </div>
+        <p class="modal-note cpu-ranking-note">CPU MODE has no online ranking.</p>
         <div id="rankingWrapper">
           <div id="localHighScore">
             <div id="localHighScoreDisplay"></div>
@@ -108,16 +125,16 @@
         </div>
         <div class="rules-grid">
           <section>
-            <h3>1. 数字を読む</h3>
-            <p>上に出る3桁のNDCを見て、対応する分類カードを選びます。</p>
+            <h3 id="ruleTitle1">1. 数字を読む</h3>
+            <p id="ruleText1">上に出る3桁のNDCを見て、対応する分類カードを選びます。</p>
           </section>
           <section>
-            <h3>2. 早く取る</h3>
-            <p>6秒以内の正解で決まり字ボーナス。連続成功でコンボが伸びます。</p>
+            <h3 id="ruleTitle2">2. 早く取る</h3>
+            <p id="ruleText2">6秒以内の正解で決まり字ボーナス。連続成功でコンボが伸びます。</p>
           </section>
           <section>
-            <h3>3. 全10ラウンド</h3>
-            <p>1ラウンド15秒。不正解は-500pt、パーフェクトなら最後にスコア2倍。</p>
+            <h3 id="ruleTitle3">3. 全10ラウンド</h3>
+            <p id="ruleText3">1ラウンド15秒。不正解は-500pt、パーフェクトなら最後にスコア2倍。</p>
           </section>
         </div>
       </div>
@@ -130,6 +147,7 @@
           <button class="modal-close" type="button" data-close-modal="resultModal" aria-label="閉じる">×</button>
         </div>
         <div id="resultDisplay">
+          <div id="battleResult"></div>
           <div id="resultScorePanel">
             <div id="resultScoreSummary"></div>
             <div id="highScoreEntryPanel" hidden>
@@ -150,6 +168,10 @@
             <div id="highScoreTitleDisplay_result"></div>
           </div>
           <div id="resultRankingContainer2"></div>
+        </div>
+        <div class="result-actions">
+          <button id="postButton" type="button">結果をXにポストする</button>
+          <button id="resultTopButton" type="button" data-close-modal="resultModal">TOP</button>
         </div>
       </div>
     </dialog>
