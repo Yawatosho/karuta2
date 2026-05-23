@@ -52,7 +52,7 @@
           <button id="postButton">結果をXにポストする</button>
         </p>
 
-        <section class="reader-panel" aria-label="読み札">
+        <section class="reader-panel is-hidden" aria-label="読み札">
           <div id="countdownDisplay" class="countdown-display" aria-live="polite"></div>
           <div id="reading">
             <div id="digit1" class="digit"><div class="num">&nbsp;</div></div>
@@ -69,7 +69,7 @@
           <div id="message"></div>
         </section>
 
-        <div id="cardGrid" class="grid"></div>
+        <div id="cardGrid" class="grid" style="display: none;"></div>
 
         <audio id="correctSound" preload="auto" playsinline>
           <source src="https://github.com/Yawatosho/gamesound/raw/refs/heads/main/correct.mp3" type="audio/mpeg">
@@ -119,7 +119,7 @@
           </section>
           <section>
             <h3>3. 全10ラウンド</h3>
-            <p>11ラウンドで1wave。ライフが0になるまでwaveを突破し続けます。</p>
+            <p>10ラウンドで1wave。ライフが0になるまでwaveを突破し続けます。</p>
           </section>
         </div>
       </div>
