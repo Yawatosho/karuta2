@@ -119,6 +119,7 @@ const scoreElCPU = document.getElementById('scoreDisplayCPU');
 const comboEl = document.getElementById('comboDisplay');
 const timeEl = document.getElementById('timeDisplay');
 const cardGrid = document.getElementById('cardGrid');
+const readerPanel = document.querySelector('.reader-panel');
 const readingEl = document.getElementById('reading');
 const countdownEl = document.getElementById('countdownDisplay');
 const fxLayer = document.getElementById('fxLayer');
@@ -126,6 +127,15 @@ const cpuCursorEl = document.getElementById('cpuCursor');
 const rankingModal = document.getElementById('rankingModal');
 const howToModal = document.getElementById('howToModal');
 const resultModal = document.getElementById('resultModal');
+
+function showReaderPanel() {
+  if (readerPanel) readerPanel.classList.remove('is-hidden');
+}
+
+function hideGameArea() {
+  if (readerPanel) readerPanel.classList.add('is-hidden');
+  cardGrid.style.display = 'none';
+}
 const resultDisplayEl = document.getElementById('resultDisplay');
 const battleResultEl = document.getElementById('battleResult');
 const digit1Num = document.querySelector('#digit1 .num');
@@ -367,6 +377,7 @@ function resetDigits() {
 
 function setOpeningControls() {
   document.body.classList.remove('game-playing');
+  hideGameArea();
   startButton.style.display = 'inline-block';
   hiscoreButton.style.display = 'inline-block';
   if (cpuButton) cpuButton.style.display = 'inline-block';
@@ -382,6 +393,7 @@ function setOpeningControls() {
 
 function setPlayingControls() {
   document.body.classList.add('game-playing');
+  showReaderPanel();
   startButton.style.display = 'none';
   hiscoreButton.style.display = 'none';
   if (cpuButton) cpuButton.style.display = 'none';
@@ -397,6 +409,7 @@ function setPlayingControls() {
 
 function setFinishedControls() {
   document.body.classList.remove('game-playing');
+  hideGameArea();
   startButton.style.display = 'none';
   hiscoreButton.style.display = 'inline-block';
   if (cpuButton) cpuButton.style.display = 'inline-block';

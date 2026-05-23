@@ -92,6 +92,7 @@ const lifeEl        = document.getElementById('lifeDisplay');
 const comboEl       = document.getElementById('comboDisplay');
 const timeEl        = document.getElementById('timeDisplay');
 const cardGrid      = document.getElementById('cardGrid');
+const readerPanel   = document.querySelector('.reader-panel');
 const readingEl     = document.getElementById('reading');
 const countdownEl   = document.getElementById('countdownDisplay');
 const resultDisplayEl = document.getElementById('resultDisplay');
@@ -99,6 +100,15 @@ const fxLayer       = document.getElementById('fxLayer');
 const rankingModal  = document.getElementById('rankingModal');
 const howToModal    = document.getElementById('howToModal');
 const resultModal   = document.getElementById('resultModal');
+
+function showReaderPanel() {
+  if (readerPanel) readerPanel.classList.remove('is-hidden');
+}
+
+function hideGameArea() {
+  if (readerPanel) readerPanel.classList.add('is-hidden');
+  cardGrid.style.display = 'none';
+}
 const resultScoreSummaryEl = document.getElementById('resultScoreSummary');
 const highScoreEntryPanel = document.getElementById('highScoreEntryPanel');
 const highScoreForm = document.getElementById('highScoreForm');
@@ -621,6 +631,7 @@ function resetGame() {
   closeModal(resultModal);
   gameRunId++;
   document.body.classList.remove('game-playing');
+  hideGameArea();
 
   cards = [];
   currentReadingCard = null;
@@ -665,7 +676,6 @@ function resetGame() {
   timeEl.innerText      = 'TIME: 15.0 sec';
   timeEl.classList.remove('danger');
   comboEl.innerText     = '';
-  cardGrid.style.display = 'flex';
   startButton.style.display = 'inline-block';  // ★GAME START 再表示
   if (hiscoreButton) hiscoreButton.style.display = 'inline-block';
   cpuButton.style.display   = 'inline-block';  // ★VS CPU MODE も同タイミングで表示
@@ -684,6 +694,7 @@ function quitGame() {
   resetCorrectSoundRate();
   gameRunId++;
   document.body.classList.remove('game-playing');
+  hideGameArea();
   cards = [];
   currentReadingCard = null;
   round = 0;
@@ -713,7 +724,6 @@ function quitGame() {
   hideCountdown();
 
   cardGrid.innerHTML = '';
-  cardGrid.style.display = 'flex';
   scoreEl.style.display = 'block';
   if (waveEl) waveEl.style.display = 'block';
   if (lifeEl) lifeEl.style.display = 'block';
@@ -747,6 +757,7 @@ function startGame() {
 
   const runId = ++gameRunId;
   document.body.classList.add('game-playing');
+  showReaderPanel();
   resetCorrectSoundRate();
   if(soundEnabled) { startSound.currentTime = 0; startSound.play(); }
   startButton.style.display = 'none';      // ★GAME START 非表示
@@ -1258,6 +1269,7 @@ function endGame() {
   readingEl.style.display = 'none';
   cancelCountdown();
   cardGrid.style.display  = 'none';
+  hideGameArea();
   scoreEl.style.display   = 'none';
   if (waveEl) waveEl.style.display = 'none';
   if (lifeEl) lifeEl.style.display = 'none';
