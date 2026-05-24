@@ -146,6 +146,11 @@ const digit3Num = document.querySelector('#digit3 .num');
 const CORRECT_SOUND_BASE_RATE = 1;
 const CORRECT_SOUND_RATE_STEP = 0.08;
 const CORRECT_SOUND_MAX_RATE = 1.6;
+const digitSounds = Array.from({ length: 10 }, (_, digit) => {
+  const audio = new Audio(`${digit}.mp3`);
+  audio.preload = 'auto';
+  return audio;
+});
 
 function applyTheme() {
   document.documentElement.dataset.theme = 'light';
@@ -251,6 +256,14 @@ function playCorrectSoundForCombo(comboCount) {
   correctSound.playbackRate = Math.min(CORRECT_SOUND_BASE_RATE + comboBoost, CORRECT_SOUND_MAX_RATE);
   correctSound.currentTime = 0;
   correctSound.play();
+}
+
+function playDigitSound(digit) {
+  if (!soundEnabled) return;
+  const audio = digitSounds[Number(digit)];
+  if (!audio) return;
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
 }
 
 function pulseBody(className, duration = 420) {
@@ -644,18 +657,21 @@ function readDigits(ndc) {
     digit1Num.textContent = digits[0];
     digit1Num.style.transform = 'translateY(0)';
     digit1Num.style.opacity = 1;
+    playDigitSound(digits[0]);
     maybeTriggerCpu(1);
   }, 0));
   readingTimeouts.push(setTimeout(() => {
     digit2Num.textContent = digits[1];
     digit2Num.style.transform = 'translateY(0)';
     digit2Num.style.opacity = 1;
+    playDigitSound(digits[1]);
     maybeTriggerCpu(2);
   }, 2000));
   readingTimeouts.push(setTimeout(() => {
     digit3Num.textContent = digits[2];
     digit3Num.style.transform = 'translateY(0)';
     digit3Num.style.opacity = 1;
+    playDigitSound(digits[2]);
     maybeTriggerCpu(3);
   }, 4000));
 }

@@ -23,7 +23,7 @@
   --digit-border: rgba(47, 111, 123, 0.24);
   --digit-color: var(--accent-strong);
   --digit-shadow: none;
-  --digit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 18px rgba(34, 83, 95, 0.06);
+  --digit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
   --hud-bg: rgba(255, 255, 255, 0.66);
   --message-bg: rgba(255, 255, 255, 0.7);
   --message-border: rgba(34, 83, 95, 0.14);
@@ -189,8 +189,9 @@ h1 {
 
 .topbar {
   align-items: center;
-  justify-content: space-between;
-  margin: 18px 0;
+  justify-content: center;
+  margin: 14px 0 18px;
+  min-height: 28px;
 }
 
 .mode-actions,
@@ -204,30 +205,47 @@ h1 {
 }
 
 .mode-actions {
-  margin-bottom: 10px;
+  width: min(100%, 640px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 14px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-soft);
+}
+
+.game-playing .mode-actions {
+  display: none;
 }
 
 .toggle-stack {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 14px;
+  gap: 8px;
 }
 
 .sound-toggle-wrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .switch input[type="checkbox"] {
   appearance: none;
   position: relative;
-  width: 48px;
-  height: 26px;
+  width: 32px;
+  height: 18px;
   margin: 0;
   border: 1px solid rgba(34, 83, 95, 0.2);
   border-radius: 999px;
@@ -239,10 +257,10 @@ h1 {
 .switch input[type="checkbox"]::before {
   content: "";
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 18px;
-  height: 18px;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 2px 8px rgba(31, 83, 103, 0.16);
@@ -251,10 +269,10 @@ h1 {
 
 .switch input[type="checkbox"]:checked {
   background: var(--cyan);
-  box-shadow: 0 0 0 3px rgba(47, 111, 123, 0.1);
+  box-shadow: 0 0 0 2px rgba(47, 111, 123, 0.08);
 }
 
-.switch input[type="checkbox"]:checked::before { transform: translateX(22px); }
+.switch input[type="checkbox"]:checked::before { transform: translateX(14px); }
 
 .action-row {
   display: grid;
@@ -284,12 +302,12 @@ h1 {
   border-radius: 6px;
   color: var(--text);
   background: var(--button-bg);
-  box-shadow: 0 8px 18px rgba(31, 83, 103, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 3px rgba(31, 83, 103, 0.04);
   cursor: pointer;
   text-align: center;
   text-decoration: none;
   text-transform: uppercase;
-  transition: transform 0.16s, border-color 0.16s, box-shadow 0.16s;
+  transition: transform 0.14s, border-color 0.14s, background 0.14s;
 }
 
 #cpuButton.active,
@@ -306,6 +324,27 @@ h1 {
   background: var(--accent);
   border-color: rgba(34, 83, 95, 0.26);
   font-weight: 900;
+}
+
+.mode-actions #hiscoreButton,
+.mode-actions #cpuButton,
+.mode-actions #endlessButton {
+  min-width: 0;
+  padding: 10px 12px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.mode-actions #hiscoreButton.active,
+.mode-actions #cpuButton.active,
+.mode-actions #endlessButton.active {
+  color: var(--accent-strong);
+  border-color: rgba(34, 83, 95, 0.12);
+  background: var(--accent-soft);
 }
 
 #restartButton,
@@ -328,14 +367,33 @@ h1 {
 #resultTopButton:hover,
 #rankingButton:hover,
 #howToButton:hover {
-  transform: translateY(-3px);
+  transform: translateY(-1px);
   border-color: var(--line-hot);
-  box-shadow: 0 12px 24px rgba(31, 83, 103, 0.1), 0 0 0 3px rgba(47, 111, 123, 0.08);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+#startButton:hover {
+  color: #ffffff;
+  border-color: rgba(34, 83, 95, 0.28);
+  background: var(--accent-strong);
+}
+
+.mode-actions #hiscoreButton:hover,
+.mode-actions #cpuButton:hover,
+.mode-actions #endlessButton:hover,
+.mode-actions #hiscoreButton.active:hover,
+.mode-actions #cpuButton.active:hover,
+.mode-actions #endlessButton.active:hover {
+  transform: none;
+  color: var(--accent-strong);
+  border-color: rgba(34, 83, 95, 0.14);
+  background: var(--accent-soft);
 }
 
 .card:hover {
+  transform: translateY(-2px) !important;
   border-color: var(--line-hot);
-  box-shadow: 0 12px 24px rgba(31, 83, 103, 0.1), 0 0 0 3px rgba(47, 111, 123, 0.08);
+  background: rgba(255, 255, 255, 0.96);
 }
 
 .reader-panel {
@@ -480,6 +538,16 @@ body.game-playing[data-mode="endless"] #lifeDisplay {
   display: inline-flex !important;
 }
 
+body.game-playing[data-mode="endless"] #waveDisplay,
+body.game-playing[data-mode="endless"] #lifeDisplay,
+body.game-playing[data-mode="endless"] #scoreDisplay {
+  display: inline-flex !important;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 .life-label {
   margin-right: 10px;
   font-size: 0.78em;
@@ -522,10 +590,10 @@ body.game-playing[data-mode="endless"] #lifeDisplay {
   align-items: center;
   justify-content: center;
   padding: 10px 18px;
-  border: 1px solid rgba(34, 83, 95, 0.16);
+  border: 0;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 10px 26px rgba(31, 83, 103, 0.12);
+  box-shadow: none;
   font-weight: 900;
   opacity: 0;
   transform: translateY(12px) scale(0.96);
@@ -733,14 +801,14 @@ body.game-playing[data-mode="endless"] #lifeDisplay {
   border-radius: 8px;
   color: var(--text);
   background: var(--card-bg);
-  box-shadow: 0 8px 18px rgba(31, 83, 103, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  box-shadow: 0 1px 3px rgba(31, 83, 103, 0.04);
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
   cursor: pointer;
   transform: none !important;
-  transition: border-color 0.14s, box-shadow 0.14s, opacity 0.18s, background 0.14s;
+  transition: border-color 0.14s, opacity 0.18s, background 0.14s;
   will-change: auto;
 }
 
@@ -1204,8 +1272,10 @@ ul { padding-left: 1.4em; }
   }
 
   .toggle-stack {
-    width: 100%;
-    justify-content: center;
+    top: 10px;
+    right: 10px;
+    width: auto;
+    justify-content: flex-end;
   }
 
   #quitButton {
@@ -1236,21 +1306,30 @@ ul { padding-left: 1.4em; }
 
   .arena {
     display: flex;
-    width: min(calc(100dvw - 8px), calc((100dvh - 8px) * 9 / 16));
-    height: min(calc(100dvh - 8px), calc((100dvw - 8px) * 16 / 9));
+    width: min(100dvw, calc(100dvh * 9 / 16));
+    height: min(100dvh, calc(100dvw * 16 / 9));
     min-height: 0;
-    padding: 4px 0;
+    padding: 0;
     flex-direction: column;
   }
 
   .game-shell {
     display: flex;
-    height: 100%;
+    height: auto;
     min-height: 0;
-    padding: 8px;
-    flex: 1;
+    padding: 6px;
+    flex: 1 1 auto;
     flex-direction: column;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
     overflow: hidden;
+  }
+
+  .game-shell::before {
+    display: none;
   }
 
   #karuta {
@@ -1274,7 +1353,19 @@ ul { padding-left: 1.4em; }
   }
 
   .game-playing .topbar {
+    display: flex;
+    height: 0;
+    min-height: 0;
+    margin: 0;
+  }
+
+  .game-playing .status-chip {
     display: none;
+  }
+
+  .toggle-stack {
+    top: 6px;
+    right: 6px;
   }
 
   .status-chip {
@@ -1367,10 +1458,17 @@ ul { padding-left: 1.4em; }
   #waveDisplay,
   #lifeDisplay {
     min-width: calc(33.333% - 4px);
+    height: 30px;
     min-height: 30px;
     padding: 5px 6px;
     font-size: 0.7rem;
     line-height: 1.2;
+  }
+
+  body.game-playing[data-mode="endless"] #waveDisplay,
+  body.game-playing[data-mode="endless"] #lifeDisplay,
+  body.game-playing[data-mode="endless"] #scoreDisplay {
+    height: 30px;
   }
 
   #timeDisplay {
@@ -1428,6 +1526,18 @@ ul { padding-left: 1.4em; }
   }
 
   .credits {
+    display: block;
+    flex: 0 0 auto;
+    margin: auto 6px 4px;
+    font-size: 0.52rem;
+    line-height: 1.25;
+  }
+
+  .credits p {
+    margin: 1px 0;
+  }
+
+  body.game-playing .credits {
     display: none;
   }
 }

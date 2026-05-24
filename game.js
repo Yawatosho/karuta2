@@ -28,6 +28,11 @@ const CORRECT_SOUND_BASE_RATE = 1;
 const CORRECT_SOUND_RATE_STEP = 0.08;
 const CORRECT_SOUND_MAX_RATE = 1.6;
 const ROUND_TIME_MS = 15000;
+const digitSounds = Array.from({ length: 10 }, (_, digit) => {
+  const audio = new Audio(`${digit}.mp3`);
+  audio.preload = 'auto';
+  return audio;
+});
 
 function resetCorrectSoundRate() {
   correctSound.playbackRate = CORRECT_SOUND_BASE_RATE;
@@ -39,6 +44,14 @@ function playCorrectSoundForCombo(comboCount) {
   correctSound.playbackRate = Math.min(CORRECT_SOUND_BASE_RATE + comboBoost, CORRECT_SOUND_MAX_RATE);
   correctSound.currentTime = 0;
   correctSound.play();
+}
+
+function playDigitSound(digit) {
+  if (!soundEnabled) return;
+  const audio = digitSounds[Number(digit)];
+  if (!audio) return;
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
 }
 
 // ===== デバッグ・ボーナス関連 =====
@@ -361,8 +374,11 @@ const rankingState = {
   // id: { period: 'day'|'month'|'all', ym: 'YYYY-MM', req: number }
 };
 const RANK_CACHE_TTL_MS = 30_000;
+const RANK_POST_REFRESH_MS = 120_000;
 const rankingMemCache = new Map(); // key -> {ts, rows}
+let rankingForceFreshUntil = 0;
 function makeRankKey(period, ym, limit){ return `${period}:${ym || ''}:${limit}`; }
+function shouldForceFreshRanking() { return Date.now() < rankingForceFreshUntil; }
 
 function rankingTabButtonHTML(targetId, label, period, active) {
   const activeClass = active ? ' active' : '';
@@ -412,14 +428,20 @@ function renderRankingWithTabs(targetId, rows, period='day', ym=getTodayYMJST(),
 
 // タブクリック時：即タブを切り替え→NOW LOADING→取得→描画
 function rankTabClick(targetId, period) {
-  const st = (rankingState[targetId] ||= { period: 'day', ym: getTodayYMDJST(), req: 0 });
+  const st = (rankingState[targetId] ||= { period: 'day', ym: getTodayYMJST(), req: 0 });
   st.period = period;
-  if (period === 'month' && (!st.ym || !/^\d{4}-\d{2}$/.test(st.ym))) st.ym = getTodayYMDJST();
+  if (period === 'month' && (!st.ym || !/^\d{4}-\d{2}$/.test(st.ym))) st.ym = getTodayYMJST();
 
   renderRankingWithTabs(targetId, [], st.period, st.ym, { loading: true });
 
   st.req++;
-  fetchAndRenderRanking(targetId, st.period, st.ym, st.req);
+  fetchAndRenderRanking(
+    targetId,
+    st.period,
+    st.period === 'month' ? st.ym : null,
+    st.req,
+    shouldForceFreshRanking() ? { nocache: true } : {}
+  );
 }
 
 // 取得関数（silent/nocache対応）
@@ -477,7 +499,8 @@ function fetchAndRenderRanking(targetId, period='day', ym=getTodayYMDJST(), reqI
 }
 
 function prefetchOtherPeriods(targetId){
-  const st = rankingState[targetId] || { period: 'day', ym: getTodayYMDJST() };
+  if (shouldForceFreshRanking()) return;
+  const st = rankingState[targetId] || { period: 'day', ym: getTodayYMJST() };
   const ym = getTodayYMDJST();
   // 描画しない & reqを進めない
   fetchAndRenderRanking(targetId, 'month', ym, null, { silent: true });
@@ -487,7 +510,7 @@ function prefetchOtherPeriods(targetId){
 // 初期表示：Daily を NOW LOADING→取得→描画し、裏で他期間をプリフェッチ
 function displayHighScores() {
   const id = 'resultRanking';
-  const st = (rankingState[id] ||= { period: 'day', ym: getTodayYMDJST(), req: 0 });
+  const st = (rankingState[id] ||= { period: 'day', ym: getTodayYMJST(), req: 0 });
   renderRankingWithTabs(id, [], st.period, st.ym, { loading: true });
   st.req++;
   fetchAndRenderRanking(id, st.period, st.ym, st.req);
@@ -495,7 +518,7 @@ function displayHighScores() {
 }
 function updateResultRanking() {
   const id = 'resultRankingContainer2';
-  const st = (rankingState[id] ||= { period: 'day', ym: getTodayYMDJST(), req: 0 });
+  const st = (rankingState[id] ||= { period: 'day', ym: getTodayYMJST(), req: 0 });
   renderRankingWithTabs(id, [], st.period, st.ym, { loading: true });
   st.req++;
   fetchAndRenderRanking(id, st.period, st.ym, st.req);
@@ -504,6 +527,7 @@ function updateResultRanking() {
 
 // 投稿後：表示中のタブは NOW LOADING→強制再取得、他タブはサイレントでnocache取得
 function refreshRankingsAfterPost() {
+  rankingForceFreshUntil = Date.now() + RANK_POST_REFRESH_MS;
   const TARGET_IDS = ['resultRanking', 'resultRankingContainer2'];
   const PERIODS = ['day','month','all'];
 
@@ -529,7 +553,7 @@ function refreshRankingsAfterPost() {
     const el = document.getElementById(id);
     if (!el) return;
 
-    const st = (rankingState[id] ||= { period: 'day', ym: getTodayYMDJST(), req: 0 });
+    const st = (rankingState[id] ||= { period: 'day', ym: getTodayYMJST(), req: 0 });
 
     // すぐタブをloadingに
     renderRankingWithTabs(id, [], st.period, st.ym, { loading: true });
@@ -538,12 +562,9 @@ function refreshRankingsAfterPost() {
       // ★修正：無効化に state を渡す
       invalidateMemCacheForPeriod(p, st);
 
-      if (p === st.period) {
-        st.req++;
-        fetchAndRenderRanking(id, p, p === 'month' ? st.ym : null, st.req, { nocache: true });
-      } else {
-        fetchAndRenderRanking(id, p, p === 'month' ? st.ym : null, null, { nocache: true, silent: true });
-      }
+      if (p !== st.period) return;
+      st.req++;
+      fetchAndRenderRanking(id, p, p === 'month' ? st.ym : null, st.req, { nocache: true });
     });
   });
 }
@@ -885,16 +906,19 @@ function readDigits(ndc) {
     digit1Num.textContent = digits[0];
     digit1Num.style.transform = 'translateY(0)';
     digit1Num.style.opacity = 1;
+    playDigitSound(digits[0]);
   }, 0));
   readingTimeouts.push(setTimeout(() => {
     digit2Num.textContent = digits[1];
     digit2Num.style.transform = 'translateY(0)';
     digit2Num.style.opacity = 1;
+    playDigitSound(digits[1]);
   }, 2000));
   readingTimeouts.push(setTimeout(() => {
     digit3Num.textContent = digits[2];
     digit3Num.style.transform = 'translateY(0)';
     digit3Num.style.opacity = 1;
+    playDigitSound(digits[2]);
     readingComplete = true;
   }, 4000));
 }
@@ -1198,7 +1222,7 @@ function endGame() {
   // ★右カラムは表示するが、このタイミングでは取得しない（ローディングだけ）
   (function showRankingLoadingSkeleton(){
     const id = 'resultRankingContainer2';
-    const st = (rankingState[id] ||= { period: 'day', ym: getTodayYMDJST(), req: 0 });
+    const st = (rankingState[id] ||= { period: 'day', ym: getTodayYMJST(), req: 0 });
     renderRankingWithTabs(id, [], st.period, st.ym, { loading: true }); // ←「NOW LOADING…」を表示
   })();
 
@@ -1291,12 +1315,10 @@ async function handleHighScoreSubmit(e) {
   highScoreSubmit.disabled = true;
   highScoreSubmit.textContent = 'SENDING';
   if (highScoreEntryStatus) highScoreEntryStatus.textContent = 'Submitting score...';
-  const ok = await postHighScoreViaGET(safeName, score, { autoRefresh: false });
+  const ok = await postHighScoreViaGET(safeName, score, { autoRefresh: true });
   if (ok) {
-    if (highScoreEntryStatus) highScoreEntryStatus.textContent = 'Score recorded.';
+    if (highScoreEntryStatus) highScoreEntryStatus.textContent = 'Score recorded. Updating ranking...';
     highScoreSubmit.textContent = 'DONE';
-    updateResultRanking();
-    displayHighScores();
   } else {
     highScoreNameInput.disabled = false;
     highScoreSubmit.disabled = false;
