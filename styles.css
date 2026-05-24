@@ -1392,6 +1392,10 @@ ul { padding-left: 1.4em; }
     margin: 8px 0 10px;
   }
 
+  body.game-playing .action-row {
+    margin: 4px 0 6px;
+  }
+
   #startButton,
   #cpuButton,
   #endlessButton,
@@ -1412,6 +1416,11 @@ ul { padding-left: 1.4em; }
     width: min(100%, 180px);
   }
 
+  body.game-playing #quitButton {
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
   .cpu-level-panel {
     margin: 8px auto 0;
     padding: 8px;
@@ -1428,6 +1437,12 @@ ul { padding-left: 1.4em; }
     margin: 6px 0 4px;
     padding: 8px;
     min-height: calc(var(--reader-stage-height) + var(--reader-hud-height) + var(--reader-message-height) + 20px);
+  }
+
+  body.game-playing .reader-panel {
+    --reader-stage-height: clamp(58px, 12dvh, 66px);
+    margin: 4px 0 3px;
+    padding: 7px;
   }
 
   .countdown-display,
@@ -1542,6 +1557,17 @@ ul { padding-left: 1.4em; }
     border-radius: 6px;
     font-size: 0.65rem;
     line-height: 1.22;
+  }
+
+  body.game-playing .grid {
+    gap: 5px;
+    margin: 3px 0;
+  }
+
+  body.game-playing .card {
+    --mobile-card-size: max(62px, min(calc((100% - 10px) / 3), calc(38.46dvh - 112px)));
+    flex-basis: var(--mobile-card-size);
+    width: var(--mobile-card-size);
   }
 
   .credits {

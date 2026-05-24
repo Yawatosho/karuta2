@@ -150,7 +150,7 @@
   function loadScript(src) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = `${src}?v=hidetoggleplay`;
+      script.src = `${src}?v=mobilefit1`;
       script.async = false;
       script.addEventListener('load', resolve, { once: true });
       script.addEventListener('error', reject, { once: true });
