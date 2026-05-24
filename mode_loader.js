@@ -57,6 +57,24 @@
     return null;
   }
 
+  function trackPageView(mode) {
+    if (typeof window.gtag !== 'function') return;
+    const config = MODE_CONFIGS[mode];
+    if (!config) return;
+
+    const pageUrl = new URL(window.location.href);
+    pageUrl.hash = '';
+    pageUrl.search = '';
+    pageUrl.searchParams.set('mode', mode);
+
+    window.gtag('event', 'page_view', {
+      page_title: config.title,
+      page_location: pageUrl.href,
+      page_path: `${window.location.pathname}?mode=${mode}`,
+      game_mode: mode
+    });
+  }
+
   function setMeta(selector, attr, value) {
     const el = document.querySelector(selector);
     if (el) el.setAttribute(attr, value);
@@ -144,6 +162,10 @@
 
     if (options.closeModals) {
       ['rankingModal', 'howToModal', 'resultModal'].forEach(id => closeNativeModal(document.getElementById(id)));
+    }
+
+    if (options.trackPageView !== false) {
+      trackPageView(selectedMode);
     }
   }
 
