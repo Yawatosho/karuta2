@@ -219,6 +219,10 @@ h1 {
   display: none;
 }
 
+.game-playing .toggle-stack {
+  display: none;
+}
+
 .toggle-stack {
   position: absolute;
   top: 12px;
@@ -1306,9 +1310,11 @@ ul { padding-left: 1.4em; }
 
   .arena {
     display: flex;
-    width: min(100dvw, calc(100dvh * 9 / 16));
+    width: 100dvw;
+    max-width: 420px;
     height: min(100dvh, calc(100dvw * 16 / 9));
     min-height: 0;
+    margin: 0 auto;
     padding: 0;
     flex-direction: column;
   }
@@ -1448,7 +1454,7 @@ ul { padding-left: 1.4em; }
   }
 
   .hud {
-    gap: 5px;
+    gap: 3px;
     min-height: 0;
   }
 
@@ -1457,18 +1463,31 @@ ul { padding-left: 1.4em; }
   #scoreDisplayCPU,
   #waveDisplay,
   #lifeDisplay {
-    min-width: calc(33.333% - 4px);
+    flex: 1 1 0;
+    min-width: 0;
     height: 30px;
     min-height: 30px;
-    padding: 5px 6px;
-    font-size: 0.7rem;
+    padding: 5px 3px;
+    font-size: 0.66rem;
     line-height: 1.2;
+    white-space: nowrap;
   }
 
   body.game-playing[data-mode="endless"] #waveDisplay,
   body.game-playing[data-mode="endless"] #lifeDisplay,
   body.game-playing[data-mode="endless"] #scoreDisplay {
+    flex: 1 1 0;
+    min-width: 0;
     height: 30px;
+  }
+
+  body.game-playing[data-mode="endless"] .life-label {
+    margin-right: 5px;
+  }
+
+  body.game-playing[data-mode="endless"] .life-hearts {
+    gap: 2px;
+    font-size: 1em;
   }
 
   #timeDisplay {
@@ -1554,6 +1573,20 @@ ul { padding-left: 1.4em; }
   #waveDisplay,
   #lifeDisplay,
   #timeDisplay {
-    font-size: 0.64rem;
+    font-size: 0.58rem;
+  }
+
+  body.game-playing[data-mode="endless"] #waveDisplay,
+  body.game-playing[data-mode="endless"] #lifeDisplay,
+  body.game-playing[data-mode="endless"] #scoreDisplay {
+    padding-inline: 2px;
+  }
+
+  body.game-playing[data-mode="endless"] .life-label {
+    margin-right: 3px;
+  }
+
+  body.game-playing[data-mode="endless"] .life-hearts {
+    gap: 1px;
   }
 }
