@@ -1,4 +1,4 @@
-const CACHE_NAME = 'karuta-audio-v1';
+const CACHE_NAME = 'karuta-audio-v2';
 const AUDIO_ASSETS = [
   './0.mp3',
   './1.mp3',
@@ -38,14 +38,17 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (event.request.method !== 'GET') return;
   if (url.origin !== location.origin || !url.pathname.endsWith('.mp3')) return;
+  if (event.request.headers.has('range')) return;
 
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
       return fetch(event.request).then(response => {
-        if (response.ok) {
+        if (response.status === 200) {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          caches.open(CACHE_NAME)
+            .then(cache => cache.put(event.request, copy))
+            .catch(() => {});
         }
         return response;
       });
