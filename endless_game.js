@@ -372,24 +372,34 @@ function fetchJSONPAttempt(url, timeout) {
     const separator = url.includes('?') ? '&' : '?';
     const script = document.createElement('script');
     let timer = null;
+    let settled = false;
 
     function cleanup() {
       if (timer) clearTimeout(timer);
-      delete window[callbackName];
       script.remove();
+      window[callbackName] = () => {};
+      setTimeout(() => {
+        try { delete window[callbackName]; } catch(e) {}
+      }, 30_000);
     }
 
     window[callbackName] = data => {
+      if (settled) return;
+      settled = true;
       cleanup();
       resolve(data);
     };
 
     script.onerror = () => {
+      if (settled) return;
+      settled = true;
       cleanup();
       reject(new Error(`JSONP request failed: ${script.src}`));
     };
 
     timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
       cleanup();
       reject(new Error(`JSONP request timed out: ${script.src}`));
     }, timeout);
@@ -1392,6 +1402,7 @@ function endGame() {
       })
       .catch(err => {
         console.error('[runHighScoreFlow] error:', err);
+        showHighScoreEntryForm();
         updateResultRanking();
         displayHighScores();
       });
@@ -1480,8 +1491,8 @@ function checkHighScore(currentScore) {
       return currentScore > lowest;
     })
     .catch(err => {
-      console.error('[checkHighScore] 判定エラー:', err);
-      return false;
+      console.warn('[checkHighScore] 判定エラー。登録フォームを表示します:', err);
+      return true;
     });
 }
 

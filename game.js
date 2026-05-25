@@ -363,24 +363,34 @@ function fetchJSONPAttempt(url, timeout) {
     const separator = url.includes('?') ? '&' : '?';
     const script = document.createElement('script');
     let timer = null;
+    let settled = false;
 
     function cleanup() {
       if (timer) clearTimeout(timer);
-      delete window[callbackName];
       script.remove();
+      window[callbackName] = () => {};
+      setTimeout(() => {
+        try { delete window[callbackName]; } catch(e) {}
+      }, 30_000);
     }
 
     window[callbackName] = data => {
+      if (settled) return;
+      settled = true;
       cleanup();
       resolve(data);
     };
 
     script.onerror = () => {
+      if (settled) return;
+      settled = true;
       cleanup();
       reject(new Error(`JSONP request failed: ${script.src}`));
     };
 
     timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
       cleanup();
       reject(new Error(`JSONP request timed out: ${script.src}`));
     }, timeout);
@@ -1210,8 +1220,7 @@ function displayUsedCards() {
   resultCards.innerHTML = html;
 }
 function postToX() {
-  const gameName = " #日本十進分類カルタ";
-  const postText = gameName + " - スコア: " + score.toLocaleString() + "pt\n" + window.location.href;
+  const postText = " #日本十進分類カルタ HI-SCORE- スコア: " + score.toLocaleString() + "pt\n" + window.location.href;
   const postUrl = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(postText);
   window.open(postUrl, '_blank');
 }
@@ -1285,6 +1294,7 @@ function endGame() {
       })
       .catch(err => {
         console.error('[runHighScoreFlow] error:', err);
+        showHighScoreEntryForm();
         updateResultRanking();
         displayHighScores();
       });
@@ -1373,8 +1383,8 @@ function checkHighScore(currentScore) {
       return currentScore > lowest;
     })
     .catch(err => {
-      console.error('[checkHighScore] 判定エラー:', err);
-      return false;
+      console.warn('[checkHighScore] 判定エラー。登録フォームを表示します:', err);
+      return true;
     });
 }
 
