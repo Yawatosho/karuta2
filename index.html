@@ -19,8 +19,23 @@
     gtag('js', new Date());
     gtag('config', 'G-J6NS8CCNWN', { send_page_view: false });
   </script>
+  <link rel="preload" href="0.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="1.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="2.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="3.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="4.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="5.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="6.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="7.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="8.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="9.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="correct.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="ng.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="start.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="result.mp3" as="audio" type="audio/mpeg">
   <link rel="stylesheet" href="styles.css?v=mobilefit1">
-  <script src="mode_loader.js?v=mobilefit1" defer></script>
+  <script src="audio_manager.js?v=audiofix2" defer></script>
+  <script src="mode_loader.js?v=audiofix2" defer></script>
 </head>
 <body data-mode="hiscore">
   <main id="main" class="arena">
@@ -94,16 +109,16 @@
         <div id="cardGrid" class="grid" style="display: none;"></div>
 
         <audio id="correctSound" preload="auto" playsinline>
-          <source src="https://github.com/Yawatosho/gamesound/raw/refs/heads/main/correct.mp3" type="audio/mpeg">
+          <source src="correct.mp3" type="audio/mpeg">
         </audio>
         <audio id="ngSound" preload="auto" playsinline>
-          <source src="https://github.com/Yawatosho/gamesound/raw/refs/heads/main/ng.mp3" type="audio/mpeg">
+          <source src="ng.mp3" type="audio/mpeg">
         </audio>
         <audio id="startSound" preload="auto" playsinline>
-          <source src="https://github.com/Yawatosho/gamesound/raw/refs/heads/main/start.mp3" type="audio/mpeg">
+          <source src="start.mp3" type="audio/mpeg">
         </audio>
         <audio id="resultSound" preload="auto" playsinline>
-          <source src="https://github.com/Yawatosho/gamesound/raw/refs/heads/main/result.mp3" type="audio/mpeg">
+          <source src="result.mp3" type="audio/mpeg">
         </audio>
       </div>
     </section>

@@ -5,6 +5,7 @@ const CPU_CLICK_ANIM_MS = 230;
 const NDC_JSON_URL = 'https://raw.githubusercontent.com/Yawatosho/karuta/refs/heads/main/ndc.json';
 const NDC_CACHE_KEY = 'ndc_json_cache_v1';
 const THEME_KEY = 'karutaTheme';
+const karutaAudio = window.karutaAudio || null;
 
 let soundEnabled = true;
 let debugMode = false;
@@ -146,11 +147,40 @@ const digit3Num = document.querySelector('#digit3 .num');
 const CORRECT_SOUND_BASE_RATE = 1;
 const CORRECT_SOUND_RATE_STEP = 0.08;
 const CORRECT_SOUND_MAX_RATE = 1.6;
-const digitSounds = Array.from({ length: 10 }, (_, digit) => {
-  const audio = new Audio(`${digit}.mp3`);
+let correctSoundRate = CORRECT_SOUND_BASE_RATE;
+const digitSounds = new Map();
+
+function getFallbackDigitSound(digit) {
+  const normalized = Number(digit);
+  if (!Number.isInteger(normalized) || normalized < 0 || normalized > 9) return null;
+  if (digitSounds.has(normalized)) return digitSounds.get(normalized);
+  const audio = new Audio(`${normalized}.mp3`);
   audio.preload = 'auto';
+  digitSounds.set(normalized, audio);
   return audio;
-});
+}
+
+async function prepareAudioForGameplay() {
+  if (!soundEnabled || !karutaAudio) return;
+  await karutaAudio.prepare();
+}
+
+function playFallbackAudio(audio, playbackRate = 1) {
+  if (!audio) return;
+  try {
+    audio.pause();
+    audio.currentTime = 0;
+    audio.playbackRate = playbackRate;
+    audio.play().catch(() => {});
+  } catch (e) {}
+}
+
+function playSoundEffect(name, playbackRate = 1) {
+  if (!soundEnabled) return;
+  if (karutaAudio && karutaAudio.playEffect(name, { playbackRate })) return;
+  const fallbackMap = { correct: correctSound, ng: ngSound, start: startSound, result: resultSound };
+  playFallbackAudio(fallbackMap[name], playbackRate);
+}
 
 function applyTheme() {
   document.documentElement.dataset.theme = 'light';
@@ -163,7 +193,10 @@ try {
   document.documentElement.dataset.theme = 'light';
 }
 
-if (soundToggle) soundToggle.addEventListener('change', e => { soundEnabled = e.target.checked; });
+if (soundToggle) soundToggle.addEventListener('change', e => {
+  soundEnabled = e.target.checked;
+  if (karutaAudio) karutaAudio.setEnabled(soundEnabled);
+});
 if (cpuLevelSelect) cpuLevelSelect.addEventListener('change', e => { cpuLevel = e.target.value; });
 
 function esc(s) {
@@ -247,20 +280,21 @@ function closeModal(modal) {
 }
 
 function resetCorrectSoundRate() {
-  correctSound.playbackRate = CORRECT_SOUND_BASE_RATE;
+  correctSoundRate = CORRECT_SOUND_BASE_RATE;
+  if (correctSound) correctSound.playbackRate = CORRECT_SOUND_BASE_RATE;
 }
 
 function playCorrectSoundForCombo(comboCount) {
   if (!soundEnabled) return;
   const comboBoost = Math.max(0, comboCount - 1) * CORRECT_SOUND_RATE_STEP;
-  correctSound.playbackRate = Math.min(CORRECT_SOUND_BASE_RATE + comboBoost, CORRECT_SOUND_MAX_RATE);
-  correctSound.currentTime = 0;
-  correctSound.play();
+  correctSoundRate = Math.min(CORRECT_SOUND_BASE_RATE + comboBoost, CORRECT_SOUND_MAX_RATE);
+  playSoundEffect('correct', correctSoundRate);
 }
 
 function playDigitSound(digit) {
   if (!soundEnabled) return;
-  const audio = digitSounds[Number(digit)];
+  if (karutaAudio && karutaAudio.playDigit(digit)) return;
+  const audio = getFallbackDigitSound(digit);
   if (!audio) return;
   audio.currentTime = 0;
   audio.play().catch(() => {});
@@ -444,17 +478,15 @@ function startGame() {
   closeModal(howToModal);
   closeModal(resultModal);
   const runId = ++gameRunId;
+  const audioReady = prepareAudioForGameplay();
   resetCorrectSoundRate();
   if (cpuLevelSelect) cpuLevel = cpuLevelSelect.value;
-  if (soundEnabled) {
-    startSound.currentTime = 0;
-    startSound.play();
-  }
   setPlayingControls();
   setMessage('ready', 'LOADOUT', '');
-  fetchCards()
-    .then(fetchedCards => {
+  Promise.all([fetchCards(), audioReady])
+    .then(([fetchedCards]) => {
       if (runId !== gameRunId) return;
+      playSoundEffect('start');
       initGame(fetchedCards, runId);
     })
     .catch(err => {
@@ -515,10 +547,6 @@ function initGame(fetchedCards, runId = gameRunId) {
 }
 
 function resetGame() {
-  if (soundEnabled) {
-    startSound.currentTime = 0;
-    startSound.play();
-  }
   closeModal(resultModal);
   quitGame(false);
   startGame();
@@ -526,8 +554,7 @@ function resetGame() {
 
 function quitGame(playResetSound = false) {
   if (playResetSound && soundEnabled) {
-    startSound.currentTime = 0;
-    startSound.play();
+    playSoundEffect('start');
   }
   gameRunId++;
   resetCorrectSoundRate();
@@ -773,10 +800,7 @@ function handleCorrect(cardEl, isCPU, t, isEarlyEffective) {
 }
 
 function handleMiss(cardEl, isCPU) {
-  if (soundEnabled) {
-    ngSound.currentTime = 0;
-    ngSound.play();
-  }
+  playSoundEffect('ng');
   resetCorrectSoundRate();
   clearCpuTimers();
   pulseBody('miss-flash');
@@ -950,10 +974,7 @@ function endGame() {
   clearRoundTimers();
   cancelCountdown();
   hideCpuCursor();
-  if (soundEnabled) {
-    resultSound.currentTime = 0;
-    resultSound.play();
-  }
+  playSoundEffect('result');
   pulseBody('finish-flash', 900);
   roundActive = false;
   readingEl.style.display = 'none';
