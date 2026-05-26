@@ -299,7 +299,8 @@ h1 {
 #postButton,
 #resultTopButton,
 #rankingButton,
-#howToButton {
+#howToButton,
+#nextWaveButton {
   min-width: 168px;
   padding: 13px 22px;
   border: 1px solid rgba(34, 83, 95, 0.18);
@@ -353,12 +354,77 @@ h1 {
 
 #restartButton,
 #quitButton,
-#postButton { display: none; }
+#postButton,
+#nextWaveButton { display: none; }
 
-#quitButton {
+#quitButton,
+#nextWaveButton {
   grid-column: 1 / -1;
   justify-self: center;
   width: 180px;
+}
+
+#nextWaveButton:disabled {
+  opacity: 0.58;
+  cursor: wait;
+  transform: none;
+}
+
+body.game-playing[data-mode="endless"].awaiting-next-wave #nextWaveButton {
+  position: static;
+  z-index: 1;
+  width: min(100%, 230px);
+  border-color: rgba(34, 83, 95, 0.18);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--cyan);
+  transform: none;
+}
+
+body.game-playing[data-mode="endless"].awaiting-next-wave #nextWaveButton:hover {
+  border-color: rgba(34, 83, 95, 0.26);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--accent-strong);
+  transform: translateY(-1px);
+}
+
+body.game-playing[data-mode="endless"].awaiting-next-wave #nextWaveButton:disabled {
+  transform: none;
+}
+
+body.game-playing[data-mode="endless"].awaiting-next-wave #nextWaveButton[data-ready="true"]::before {
+  content: none;
+}
+
+body.game-playing[data-mode="endless"].awaiting-next-wave .grid {
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+}
+
+.next-wave-panel {
+  display: flex;
+  width: 100%;
+  min-height: 240px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--cyan);
+  text-align: center;
+}
+
+.next-wave-ready {
+  color: var(--cyan);
+  font-family: "Bebas Neue", "Noto Sans JP", sans-serif;
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+  visibility: hidden;
+}
+
+.next-wave-panel.is-ready .next-wave-ready {
+  visibility: visible;
 }
 
 #startButton:hover,
@@ -370,7 +436,8 @@ h1 {
 #postButton:hover,
 #resultTopButton:hover,
 #rankingButton:hover,
-#howToButton:hover {
+#howToButton:hover,
+#nextWaveButton:hover {
   transform: translateY(-1px);
   border-color: var(--line-hot);
   background: rgba(255, 255, 255, 0.96);
@@ -927,9 +994,22 @@ ul { padding-left: 1.4em; }
   display: none;
 }
 
+#highScoreEntryPanel.is-checking {
+  border-top-color: rgba(47, 111, 123, 0.16);
+}
+
 .highscore-form {
   display: grid;
   gap: 10px;
+}
+
+#highScoreEntryPanel.is-checking .highscore-form {
+  gap: 0;
+}
+
+#highScoreEntryPanel.is-checking .highscore-form label,
+#highScoreEntryPanel.is-checking .name-submit-row {
+  display: none;
 }
 
 .highscore-form label {
@@ -979,6 +1059,10 @@ ul { padding-left: 1.4em; }
   color: var(--muted);
   font-size: 0.86rem;
   font-weight: 700;
+}
+
+#highScoreEntryPanel.is-checking #highScoreEntryStatus {
+  color: var(--cyan);
 }
 
 .credits {
@@ -1206,7 +1290,8 @@ ul { padding-left: 1.4em; }
   #postButton,
   #resultTopButton,
   #rankingButton,
-  #howToButton {
+  #howToButton,
+  #nextWaveButton {
     width: 100%;
     min-width: 0;
   }
@@ -1282,7 +1367,8 @@ ul { padding-left: 1.4em; }
     justify-content: flex-end;
   }
 
-  #quitButton {
+  #quitButton,
+  #nextWaveButton {
     width: 100%;
   }
 
@@ -1405,20 +1491,36 @@ ul { padding-left: 1.4em; }
   #postButton,
   #resultTopButton,
   #rankingButton,
-  #howToButton {
+  #howToButton,
+  #nextWaveButton {
     min-width: 0;
     padding: 9px 6px;
     font-size: 0.72rem;
     line-height: 1.15;
   }
 
-  #quitButton {
+  #quitButton,
+  #nextWaveButton {
     width: min(100%, 180px);
   }
 
-  body.game-playing #quitButton {
+  body.game-playing #quitButton,
+  body.game-playing #nextWaveButton {
     padding-top: 7px;
     padding-bottom: 7px;
+  }
+
+  body.game-playing[data-mode="endless"].awaiting-next-wave #nextWaveButton {
+    width: min(100%, 190px);
+  }
+
+  .next-wave-panel {
+    min-height: 100%;
+    gap: 8px;
+  }
+
+  .next-wave-ready {
+    font-size: 1.22rem;
   }
 
   .cpu-level-panel {

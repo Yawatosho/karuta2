@@ -3,11 +3,11 @@
   const MODE_CONFIGS = {
     hiscore: {
       script: 'game.js',
-      title: '日本十進分類カルタ',
-      description: 'NDCを素早く見抜いてカードを取る、日本十進分類カルタ。',
+      title: 'SUPER日本十進分類カルタ',
+      description: 'NDCを素早く見抜いてカードを取る、SUPER日本十進分類カルタ。',
       ogDescription: '分類コードを読み解き、最速で札を取れ。',
       status: '10 ROUNDS / 15 SEC',
-      label: '日本十進分類カルタ',
+      label: 'SUPER日本十進分類カルタ',
       rules: [
         ['1. 数字を読む', '上に出る3桁のNDCを見て、対応する分類カードを選びます。'],
         ['2. 早く取る', '6秒以内の正解で決まり字ボーナス。連続成功でコンボが伸びます。'],
@@ -16,11 +16,11 @@
     },
     cpu: {
       script: 'cpu_game.js',
-      title: '日本十進分類カルタ VS CPU',
-      description: 'NDCを素早く見抜いてカードを取る、日本十進分類カルタ CPU対戦モード。',
+      title: 'SUPER日本十進分類カルタ VS CPU',
+      description: 'NDCを素早く見抜いてカードを取る、SUPER日本十進分類カルタ CPU対戦モード。',
       ogDescription: '分類コードを読み解き、CPUより速く札を取れ。',
       status: 'VS CPU / 10 ROUNDS / 15 SEC',
-      label: '日本十進分類カルタ CPU対戦',
+      label: 'SUPER日本十進分類カルタ CPU対戦',
       rules: [
         ['1. CPUより速く取る', '3桁のNDCが順に表示されます。対応する分類カードをCPUより先に選びます。'],
         ['2. 決まり字を狙う', '6秒以内の正解でKIMARIJI BONUS。連続成功でコンボが伸びます。'],
@@ -29,11 +29,11 @@
     },
     endless: {
       script: 'endless_game.js',
-      title: '日本十進分類カルタ ENDLESS',
-      description: 'NDCを素早く見抜いてカードを取り続ける、日本十進分類カルタ エンドレスモード。',
+      title: 'SUPER日本十進分類カルタ ENDLESS',
+      description: 'NDCを素早く見抜いてカードを取り続ける、SUPER日本十進分類カルタ エンドレスモード。',
       ogDescription: '分類コードを読み解き、ライフが尽きるまで札を取り続けろ。',
       status: 'ENDLESS / 10 ROUNDS PER WAVE / LIFE 3',
-      label: '日本十進分類カルタ',
+      label: 'SUPER日本十進分類カルタ',
       rules: [
         ['1. 数字を読む', '上に出る3桁のNDCを見て、対応する分類カードを選びます。'],
         ['2. 早く取る', '6秒以内の正解で決まり字ボーナス。連続成功でコンボが伸びます。'],
@@ -138,6 +138,8 @@
     setMeta('meta[name="description"]', 'content', config.description);
     setMeta('meta[property="og:title"]', 'content', config.title);
     setMeta('meta[property="og:description"]', 'content', config.ogDescription);
+    setMeta('meta[name="twitter:title"]', 'content', config.title);
+    setMeta('meta[name="twitter:description"]', 'content', config.ogDescription);
 
     const shell = document.querySelector('.game-shell');
     if (shell) {
@@ -172,7 +174,7 @@
   function loadScript(src) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = `${src}?v=scorefix1`;
+      script.src = `${src}?v=rankcheck1`;
       script.async = false;
       script.addEventListener('load', resolve, { once: true });
       script.addEventListener('error', reject, { once: true });
@@ -210,6 +212,7 @@
   document.getElementById('startButton')?.addEventListener('click', () => runSelected('startGame'));
   document.getElementById('howToButton')?.addEventListener('click', () => runSelected('showHowTo', () => showNativeModal(document.getElementById('howToModal'))));
   document.getElementById('quitButton')?.addEventListener('click', () => runSelected('quitGame'));
+  document.getElementById('nextWaveButton')?.addEventListener('click', () => runSelected('nextWave'));
   document.getElementById('restartButton')?.addEventListener('click', () => runSelected('resetGame'));
   document.getElementById('postButton')?.addEventListener('click', () => runSelected('postToX'));
 

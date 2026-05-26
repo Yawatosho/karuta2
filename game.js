@@ -1220,7 +1220,7 @@ function displayUsedCards() {
   resultCards.innerHTML = html;
 }
 function postToX() {
-  const postText = " #日本十進分類カルタ HI-SCORE- スコア: " + score.toLocaleString() + "pt\n" + window.location.href;
+  const postText = " #SUPER日本十進分類カルタ HI-SCORE- スコア: " + score.toLocaleString() + "pt\n" + window.location.href;
   const postUrl = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(postText);
   window.open(postUrl, '_blank');
 }
@@ -1257,7 +1257,7 @@ function endGame() {
     setMessage('finish', 'MISSION COMPLETE', `SCORE ${score.toLocaleString()}pt`);
   }
   renderResultScoreSummary(perfectGame);
-  hideHighScoreEntryPanel();
+  showHighScoreChecking();
 
   const resultDisplay = document.getElementById('resultDisplay');
   resultDisplay.style.display = 'flex';
@@ -1316,6 +1316,8 @@ function renderResultScoreSummary(isPerfectClear) {
 function resetHighScoreEntryPanel(status = '') {
   if (!highScoreEntryPanel) return;
   highScoreEntryPanel.hidden = false;
+  highScoreEntryPanel.classList.remove('is-checking');
+  setHighScoreEntryTitle('NEW RECORD');
   if (highScoreNameInput) {
     highScoreNameInput.value = '';
     highScoreNameInput.disabled = true;
@@ -1324,8 +1326,31 @@ function resetHighScoreEntryPanel(status = '') {
   if (highScoreEntryStatus) highScoreEntryStatus.textContent = status;
 }
 
+function setHighScoreEntryTitle(text) {
+  const heading = highScoreEntryPanel?.querySelector('.resultheading');
+  if (heading) heading.textContent = text;
+}
+
+function showHighScoreChecking() {
+  if (!highScoreEntryPanel) return;
+  highScoreEntryPanel.hidden = false;
+  highScoreEntryPanel.classList.add('is-checking');
+  setHighScoreEntryTitle('RANKING CHECK');
+  if (highScoreNameInput) {
+    highScoreNameInput.value = '';
+    highScoreNameInput.disabled = true;
+  }
+  if (highScoreSubmit) {
+    highScoreSubmit.disabled = true;
+    highScoreSubmit.textContent = 'CHECKING';
+  }
+  if (highScoreEntryStatus) highScoreEntryStatus.textContent = 'ランキング入賞を確認中...';
+}
+
 function hideHighScoreEntryPanel() {
   if (!highScoreEntryPanel) return;
+  highScoreEntryPanel.classList.remove('is-checking');
+  setHighScoreEntryTitle('NEW RECORD');
   highScoreEntryPanel.hidden = true;
   if (highScoreEntryStatus) highScoreEntryStatus.textContent = '';
 }
@@ -1333,6 +1358,8 @@ function hideHighScoreEntryPanel() {
 function showHighScoreEntryForm() {
   if (!highScoreEntryPanel) return;
   highScoreEntryPanel.hidden = false;
+  highScoreEntryPanel.classList.remove('is-checking');
+  setHighScoreEntryTitle('NEW RECORD');
   if (highScoreNameInput) {
     highScoreNameInput.disabled = false;
     highScoreNameInput.value = localStorage.getItem(LAST_PLAYER_NAME_KEY) || 'Anonymous';

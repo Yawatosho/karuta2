@@ -120,6 +120,8 @@ let gameRunId = 0;
 let readingTimeouts = [];
 let countdownTimeouts = [];
 let timeDisplayInterval = null;
+let pendingWaveCards = null;
+let pendingWaveRunId = 0;
 
 let digit1Num = document.querySelector('#digit1 .num');
 let digit2Num = document.querySelector('#digit2 .num');
@@ -130,7 +132,9 @@ const hiscoreButton = document.getElementById('hiscoreButton');
 const cpuButton     = document.getElementById('cpuButton'); // ★追加
 const endlessButton = document.getElementById('endlessButton');
 const quitButton    = document.getElementById('quitButton');
+const nextWaveButton = document.getElementById('nextWaveButton');
 const restartButton = document.getElementById('restartButton');
+const nextWaveButtonHome = nextWaveButton ? nextWaveButton.parentElement : null;
 const postButton    = document.getElementById('postButton');
 const rankingButton = document.getElementById('rankingButton');
 const howToButton   = document.getElementById('howToButton');
@@ -157,6 +161,59 @@ function showReaderPanel() {
 function hideGameArea() {
   if (readerPanel) readerPanel.classList.add('is-hidden');
   cardGrid.style.display = 'none';
+}
+
+let nextWavePanel = null;
+
+function ensureNextWavePanel() {
+  if (nextWavePanel) return nextWavePanel;
+  nextWavePanel = document.createElement('div');
+  nextWavePanel.className = 'next-wave-panel';
+  nextWavePanel.innerHTML = '<div class="next-wave-ready" aria-hidden="true">READY?</div>';
+  return nextWavePanel;
+}
+
+function showNextWavePanel() {
+  const panel = ensureNextWavePanel();
+  cardGrid.innerHTML = '';
+  cardGrid.style.display = 'flex';
+  cardGrid.appendChild(panel);
+  if (nextWaveButton && nextWaveButton.parentElement !== panel) {
+    panel.appendChild(nextWaveButton);
+  }
+}
+
+function restoreNextWaveButtonHome() {
+  if (nextWaveButtonHome && nextWaveButton && nextWaveButton.parentElement !== nextWaveButtonHome) {
+    if (restartButton && restartButton.parentElement === nextWaveButtonHome) {
+      nextWaveButtonHome.insertBefore(nextWaveButton, restartButton);
+    } else {
+      nextWaveButtonHome.appendChild(nextWaveButton);
+    }
+  }
+  if (nextWavePanel && nextWavePanel.parentElement) nextWavePanel.remove();
+}
+
+function setNextWaveButton(visible, options = {}) {
+  if (!nextWaveButton) return;
+  if (visible) {
+    showNextWavePanel();
+  } else {
+    restoreNextWaveButtonHome();
+  }
+  const isReady = visible && !options.disabled && (options.ready !== false);
+  nextWaveButton.style.display = visible ? 'block' : 'none';
+  nextWaveButton.disabled = !!options.disabled;
+  nextWaveButton.textContent = options.label || 'NEXT WAVE';
+  nextWaveButton.dataset.ready = isReady ? 'true' : 'false';
+  if (nextWavePanel) nextWavePanel.classList.toggle('is-ready', isReady);
+  document.body.classList.toggle('awaiting-next-wave', !!visible);
+}
+
+function clearPendingWave() {
+  pendingWaveCards = null;
+  pendingWaveRunId = 0;
+  setNextWaveButton(false);
 }
 const resultScoreSummaryEl = document.getElementById('resultScoreSummary');
 const highScoreEntryPanel = document.getElementById('highScoreEntryPanel');
@@ -692,6 +749,7 @@ function resetGame() {
   gameRunId++;
   document.body.classList.remove('game-playing');
   hideGameArea();
+  clearPendingWave();
 
   cards = [];
   currentReadingCard = null;
@@ -754,6 +812,7 @@ function quitGame() {
   gameRunId++;
   document.body.classList.remove('game-playing');
   hideGameArea();
+  clearPendingWave();
   cards = [];
   currentReadingCard = null;
   round = 0;
@@ -812,6 +871,7 @@ function startGame() {
   closeModal(rankingModal);
   closeModal(howToModal);
   closeModal(resultModal);
+  clearPendingWave();
 
   const runId = ++gameRunId;
   const audioReady = prepareAudioForGameplay();
@@ -846,6 +906,7 @@ function startGame() {
 }
 
 function initGame(fetchedCards, runId = gameRunId) {
+  clearPendingWave();
   wave = 1;
   lives = MAX_LIVES;
   score = 0;
@@ -896,31 +957,53 @@ function completeWave() {
   disableCardClicks();
   cancelReadingTimeouts();
   clearTimeout(roundTimer);
+  clearTimeout(roundResultTimeout);
   clearInterval(timeDisplayInterval);
+  resetDigitsForNextRound();
   const completedWave = wave;
   const waveScore = Math.max(0, score - waveStartScore);
   lives = Math.min(MAX_LIVES, lives + 1);
   updateWaveDisplay();
   updateLifeDisplay();
-  setMessage('finish', `WAVE ${completedWave} RESULT`, `SCORE +${waveScore.toLocaleString()}pt / MISS ${waveMisses} / LIFE ${lives}/${MAX_LIVES}`);
+  setMessage('finish', `WAVE ${completedWave} RESULT`, `SCORE +${waveScore.toLocaleString()}pt`);
 
-  const runId = gameRunId;
+  loadNextWaveCards(gameRunId, completedWave, waveScore);
+}
+
+function loadNextWaveCards(runId, completedWave = wave, waveScore = 0) {
+  pendingWaveCards = null;
+  pendingWaveRunId = runId;
+  setNextWaveButton(true, { disabled: true, label: 'LOADING' });
+
   fetchCards().then(fetchedCards => {
     if (runId !== gameRunId) return;
-    roundResultTimeout = setTimeout(() => {
-      if (runId !== gameRunId) return;
-      wave++;
-      setupWave(fetchedCards);
-      resetDigitsForNextRound();
-      disableCardClicks();
-      setMessage('ready', `WAVE ${wave}`, `LIFE ${lives}/${MAX_LIVES}`);
-      startCountdown(runId);
-    }, 2400);
+    pendingWaveCards = fetchedCards;
+    setNextWaveButton(true, { disabled: false, label: 'NEXT WAVE' });
+    setMessage('finish', `WAVE ${completedWave} RESULT`, `SCORE +${waveScore.toLocaleString()}pt`);
   }).catch(err => {
     if (runId !== gameRunId) return;
-    setMessage('warning', 'LOAD FAILED', '');
+    pendingWaveCards = null;
+    setNextWaveButton(true, { disabled: false, label: 'RETRY LOAD', ready: false });
+    setMessage('warning', 'LOAD FAILED', 'TAP RETRY LOAD');
     console.error(err);
   });
+}
+
+function nextWave() {
+  const runId = gameRunId;
+  if (!pendingWaveCards || pendingWaveRunId !== runId) {
+    loadNextWaveCards(runId, wave, Math.max(0, score - waveStartScore));
+    return;
+  }
+
+  const fetchedCards = pendingWaveCards;
+  clearPendingWave();
+  wave++;
+  setupWave(fetchedCards);
+  resetDigitsForNextRound();
+  disableCardClicks();
+  setMessage('ready', `WAVE ${wave}`, `LIFE ${lives}/${MAX_LIVES}`);
+  startCountdown(runId);
 }
 
 function resetDigitsForNextRound() {
@@ -1330,7 +1413,7 @@ function displayUsedCards() {
   resultCards.innerHTML = html;
 }
 function postToX() {
-  const gameName = " #日本十進分類カルタ";
+  const gameName = " #SUPER日本十進分類カルタ";
   const postText = gameName + " ENDLESS - スコア: " + score.toLocaleString() + "pt / WAVE " + wave + "\n" + window.location.href;
   const postUrl = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(postText);
   window.open(postUrl, '_blank');
@@ -1340,6 +1423,7 @@ function endGame() {
   playSoundEffect('result');
   pulseBody('finish-flash', 900);
   document.body.classList.remove('game-playing');
+  clearPendingWave();
   clearTimeout(roundResultTimeout);
   cancelReadingTimeouts();
   clearTimeout(roundTimer);
@@ -1365,7 +1449,7 @@ function endGame() {
 
   setMessage('finish', 'GAME OVER', `SCORE ${score.toLocaleString()}pt / WAVE ${wave}`);
   renderResultScoreSummary();
-  hideHighScoreEntryPanel();
+  showHighScoreChecking();
 
   const resultDisplay = document.getElementById('resultDisplay');
   resultDisplay.style.display = 'flex';
@@ -1424,6 +1508,8 @@ function renderResultScoreSummary() {
 function resetHighScoreEntryPanel(status = '') {
   if (!highScoreEntryPanel) return;
   highScoreEntryPanel.hidden = false;
+  highScoreEntryPanel.classList.remove('is-checking');
+  setHighScoreEntryTitle('NEW RECORD');
   if (highScoreNameInput) {
     highScoreNameInput.value = '';
     highScoreNameInput.disabled = true;
@@ -1432,8 +1518,31 @@ function resetHighScoreEntryPanel(status = '') {
   if (highScoreEntryStatus) highScoreEntryStatus.textContent = status;
 }
 
+function setHighScoreEntryTitle(text) {
+  const heading = highScoreEntryPanel?.querySelector('.resultheading');
+  if (heading) heading.textContent = text;
+}
+
+function showHighScoreChecking() {
+  if (!highScoreEntryPanel) return;
+  highScoreEntryPanel.hidden = false;
+  highScoreEntryPanel.classList.add('is-checking');
+  setHighScoreEntryTitle('RANKING CHECK');
+  if (highScoreNameInput) {
+    highScoreNameInput.value = '';
+    highScoreNameInput.disabled = true;
+  }
+  if (highScoreSubmit) {
+    highScoreSubmit.disabled = true;
+    highScoreSubmit.textContent = 'CHECKING';
+  }
+  if (highScoreEntryStatus) highScoreEntryStatus.textContent = 'ランキング入賞を確認中...';
+}
+
 function hideHighScoreEntryPanel() {
   if (!highScoreEntryPanel) return;
+  highScoreEntryPanel.classList.remove('is-checking');
+  setHighScoreEntryTitle('NEW RECORD');
   highScoreEntryPanel.hidden = true;
   if (highScoreEntryStatus) highScoreEntryStatus.textContent = '';
 }
@@ -1441,6 +1550,8 @@ function hideHighScoreEntryPanel() {
 function showHighScoreEntryForm() {
   if (!highScoreEntryPanel) return;
   highScoreEntryPanel.hidden = false;
+  highScoreEntryPanel.classList.remove('is-checking');
+  setHighScoreEntryTitle('NEW RECORD');
   if (highScoreNameInput) {
     highScoreNameInput.disabled = false;
     highScoreNameInput.value = localStorage.getItem(LAST_PLAYER_NAME_KEY) || 'Anonymous';
@@ -1505,6 +1616,7 @@ function refreshLanding() {
 window.karutaModes = window.karutaModes || {};
 window.karutaModes.endless = {
   startGame,
+  nextWave,
   quitGame,
   resetGame,
   postToX,
