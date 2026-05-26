@@ -1220,7 +1220,7 @@ function displayUsedCards() {
   resultCards.innerHTML = html;
 }
 function postToX() {
-  const postText = " #SUPER日本十進分類カルタ HI-SCORE- スコア: " + score.toLocaleString() + "pt\n" + window.location.href;
+  const postText = " #スーパー日本十進分類カルタ HI-SCORE- スコア: " + score.toLocaleString() + "pt\n" + window.location.href;
   const postUrl = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(postText);
   window.open(postUrl, '_blank');
 }

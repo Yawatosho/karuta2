@@ -1009,7 +1009,7 @@ function postToX() {
   if (playerScore > cpuScore) outcomeLine = `${preset.label}に勝利！`;
   else if (playerScore < cpuScore) outcomeLine = `${preset.label}に敗北！`;
   else outcomeLine = `${preset.label}と引き分け！`;
-  const scoreLine = ` #SUPER日本十進分類カルタ - YOU:${playerScore.toLocaleString()}pt / CPU:${cpuScore.toLocaleString()}pt`;
+  const scoreLine = ` #スーパー日本十進分類カルタ - YOU:${playerScore.toLocaleString()}pt / CPU:${cpuScore.toLocaleString()}pt`;
   const postText = `${outcomeLine}\n${scoreLine}\n${window.location.href}`;
   window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(postText)}`, '_blank');
 }

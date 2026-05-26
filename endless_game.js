@@ -1413,7 +1413,7 @@ function displayUsedCards() {
   resultCards.innerHTML = html;
 }
 function postToX() {
-  const gameName = " #SUPER日本十進分類カルタ";
+  const gameName = " #スーパー日本十進分類カルタ";
   const postText = gameName + " ENDLESS - スコア: " + score.toLocaleString() + "pt / WAVE " + wave + "\n" + window.location.href;
   const postUrl = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(postText);
   window.open(postUrl, '_blank');
