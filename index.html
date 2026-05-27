@@ -38,13 +38,25 @@
   <link rel="preload" href="7.mp3" as="audio" type="audio/mpeg">
   <link rel="preload" href="8.mp3" as="audio" type="audio/mpeg">
   <link rel="preload" href="9.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="q_0.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="q_1.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="q_2.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="q_3.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="q_4.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="q_5.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="q_6.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="q_7.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="q_8.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="q_9.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="voice.mp3" as="audio" type="audio/mpeg">
+  <link rel="preload" href="q_voice.mp3" as="audio" type="audio/mpeg">
   <link rel="preload" href="correct.mp3" as="audio" type="audio/mpeg">
   <link rel="preload" href="ng.mp3" as="audio" type="audio/mpeg">
   <link rel="preload" href="start.mp3" as="audio" type="audio/mpeg">
   <link rel="preload" href="result.mp3" as="audio" type="audio/mpeg">
-  <link rel="stylesheet" href="styles.css?v=titlekana1">
-  <script src="audio_manager.js?v=audiofix3" defer></script>
-  <script src="mode_loader.js?v=titlekana1" defer></script>
+  <link rel="stylesheet" href="styles.css?v=voiceoption5">
+  <script src="audio_manager.js?v=voiceoption1" defer></script>
+  <script src="mode_loader.js?v=voiceoption1" defer></script>
 </head>
 <body data-mode="hiscore">
   <main id="main" class="arena">
@@ -86,6 +98,21 @@
           <button id="nextWaveButton" type="button">NEXT WAVE</button>
           <button id="restartButton" type="button">RETRY</button>
         </p>
+
+        <section id="optionPanel" class="option-panel" aria-label="OPTION">
+          <p class="option-title">OPTION</p>
+          <fieldset class="voice-options">
+            <legend>VOICE</legend>
+            <label class="voice-choice">
+              <input type="radio" name="voiceVariant" value="a" checked>
+              <span>VOICE A</span>
+            </label>
+            <label class="voice-choice">
+              <input type="radio" name="voiceVariant" value="b">
+              <span>VOICE B</span>
+            </label>
+          </fieldset>
+        </section>
 
         <section class="cpu-level-panel" aria-label="CPU難易度">
           <label for="cpuLevel">CPU LEVEL</label>

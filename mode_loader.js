@@ -174,7 +174,7 @@
   function loadScript(src) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = `${src}?v=titlekana1`;
+      script.src = `${src}?v=voiceoption1`;
       script.async = false;
       script.addEventListener('load', resolve, { once: true });
       script.addEventListener('error', reject, { once: true });

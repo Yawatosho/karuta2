@@ -8,12 +8,15 @@
     start: 'start.mp3',
     result: 'result.mp3'
   };
-  const DIGIT_SOURCES = Array.from({ length: 10 }, (_, digit) => [`digit${digit}`, `${digit}.mp3`])
-    .reduce((map, [key, src]) => {
-      map[key] = src;
-      return map;
-    }, {});
-  const SOURCES = { ...EFFECT_SOURCES, ...DIGIT_SOURCES };
+  const DIGIT_SOURCES = Array.from({ length: 10 }, (_, digit) => ({
+    [`digitA${digit}`]: `${digit}.mp3`,
+    [`digitB${digit}`]: `q_${digit}.mp3`
+  })).reduce((map, entry) => Object.assign(map, entry), {});
+  const VOICE_SAMPLE_SOURCES = {
+    voiceA: 'voice.mp3',
+    voiceB: 'q_voice.mp3'
+  };
+  const SOURCES = { ...EFFECT_SOURCES, ...DIGIT_SOURCES, ...VOICE_SAMPLE_SOURCES };
   const EFFECT_ELEMENT_IDS = {
     correct: 'correctSound',
     ng: 'ngSound',
@@ -24,9 +27,45 @@
   let audioContext = null;
   let enabled = true;
   let preparePromise = null;
+  const VOICE_STORAGE_KEY = 'karutaVoiceVariant';
+  let voiceVariant = getInitialVoiceVariant();
   const buffers = new Map();
   const loading = new Map();
   const fallbackAudios = new Map();
+
+  function normalizeVoiceVariant(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+    return normalized === 'b' || normalized === 'voiceb' || normalized === 'voice-b' ? 'b' : 'a';
+  }
+
+  function getInitialVoiceVariant() {
+    try {
+      return normalizeVoiceVariant(localStorage.getItem(VOICE_STORAGE_KEY));
+    } catch (e) {
+      return 'a';
+    }
+  }
+
+  function getDigitKey(digit, variant = voiceVariant) {
+    const normalized = Number(digit);
+    if (!Number.isInteger(normalized) || normalized < 0 || normalized > 9) return null;
+    return `digit${variant === 'b' ? 'B' : 'A'}${normalized}`;
+  }
+
+  function getDigitKeys(variant = voiceVariant) {
+    return Array.from({ length: 10 }, (_, digit) => getDigitKey(digit, variant));
+  }
+
+  function getVoiceSampleKey(variant = voiceVariant) {
+    return variant === 'b' ? 'voiceB' : 'voiceA';
+  }
+
+  function syncVoiceControls() {
+    document.documentElement.dataset.voiceVariant = voiceVariant;
+    document.querySelectorAll('input[name="voiceVariant"]').forEach(input => {
+      input.checked = normalizeVoiceVariant(input.value) === voiceVariant;
+    });
+  }
 
   function getToggleEnabled() {
     const toggle = document.getElementById('soundToggle');
@@ -185,7 +224,26 @@
   function playDigit(digit, options = {}) {
     const normalized = Number(digit);
     if (!Number.isInteger(normalized) || normalized < 0 || normalized > 9) return false;
-    return playBuffer(`digit${normalized}`, options);
+    const variant = normalizeVoiceVariant(options.voice || voiceVariant);
+    return playBuffer(getDigitKey(normalized, variant), options);
+  }
+
+  function setVoiceVariant(value, options = {}) {
+    const nextVariant = normalizeVoiceVariant(value);
+    const changed = nextVariant !== voiceVariant;
+    voiceVariant = nextVariant;
+    try { localStorage.setItem(VOICE_STORAGE_KEY, voiceVariant); } catch (e) {}
+    syncVoiceControls();
+    if (enabled) prepare([...getDigitKeys(), getVoiceSampleKey()]).catch(() => {});
+    if (options.preview && changed) {
+      resumeAudioContext()
+        .then(() => playBuffer(getVoiceSampleKey()))
+        .catch(() => playFallback(getVoiceSampleKey()));
+    }
+  }
+
+  function getVoiceVariant() {
+    return voiceVariant;
   }
 
   function setEnabled(value) {
@@ -197,7 +255,7 @@
     if (!('serviceWorker' in navigator)) return;
     if (location.protocol === 'file:') return;
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=audiofix3').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=voiceoption1').catch(() => {});
     });
   }
 
@@ -205,19 +263,28 @@
     setEnabled(event.target.checked);
   });
 
+  document.querySelectorAll('input[name="voiceVariant"]').forEach(input => {
+    input.addEventListener('change', event => {
+      if (event.target.checked) setVoiceVariant(event.target.value, { preview: true });
+    });
+  });
+
   window.karutaAudio = {
     prepare,
     playEffect,
     playDigit,
     setEnabled,
+    setVoiceVariant,
+    getVoiceVariant,
     isEnabled,
     get ready() {
       return preparePromise;
     }
   };
   document.documentElement.dataset.audioManager = 'ready';
+  syncVoiceControls();
 
-  preparePromise = prepare(['digit0', 'digit1', 'digit2', 'digit3', 'digit4', 'digit5', 'digit6', 'digit7', 'digit8', 'digit9'])
+  preparePromise = prepare([...getDigitKeys(), 'voiceA', 'voiceB'])
     .catch(() => false);
   registerAudioCacheWorker();
 })();

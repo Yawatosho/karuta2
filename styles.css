@@ -208,7 +208,7 @@ h1 {
   width: min(100%, 640px);
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
-  margin-bottom: 14px;
+  margin-bottom: 6px;
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -283,11 +283,100 @@ h1 {
   grid-template-columns: repeat(auto-fit, minmax(180px, 180px));
   justify-content: center;
   gap: 10px;
-  margin: 12px 0 18px;
+  margin: 6px 0 18px;
 }
 
 .cpu-shell .action-row {
   grid-template-columns: repeat(auto-fit, minmax(180px, 180px));
+}
+
+.option-panel {
+  position: relative;
+  display: grid;
+  width: min(100%, 360px);
+  gap: 13px;
+  margin: 24px auto 16px;
+  padding: 10px 12px;
+  border: 1px solid rgba(34, 83, 95, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.option-title {
+  margin: 0;
+  color: var(--muted);
+  font-family: "Bebas Neue", "Noto Sans JP", sans-serif;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+  text-align: center;
+}
+
+.voice-options {
+  display: grid;
+  grid-template-columns: auto repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.voice-options legend {
+  display: contents;
+  color: var(--cyan);
+  font-family: "Bebas Neue", "Noto Sans JP", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.voice-choice {
+  position: relative;
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.voice-choice input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.voice-choice span {
+  display: flex;
+  width: 100%;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(34, 83, 95, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  transition: border-color 0.14s, background 0.14s, color 0.14s, transform 0.14s;
+}
+
+.voice-choice:hover span {
+  border-color: rgba(34, 83, 95, 0.24);
+  background: rgba(255, 255, 255, 0.94);
+  transform: translateY(-1px);
+}
+
+.voice-choice input:checked + span {
+  border-color: rgba(34, 83, 95, 0.22);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+body.game-playing .option-panel {
+  display: none;
 }
 
 #startButton,
@@ -1475,7 +1564,35 @@ ul { padding-left: 1.4em; }
   }
 
   .action-row {
-    margin: 8px 0 10px;
+    margin: 4px 0 10px;
+  }
+
+  .option-panel {
+    width: min(100%, 300px);
+    gap: 10px;
+    margin: 16px auto 8px;
+    padding: 8px;
+  }
+
+  .option-title {
+    font-size: 0.86rem;
+  }
+
+  .voice-options {
+    gap: 5px;
+  }
+
+  .voice-options legend {
+    font-size: 0.75rem;
+  }
+
+  .voice-choice {
+    min-height: 28px;
+    font-size: 0.66rem;
+  }
+
+  .voice-choice span {
+    min-height: 28px;
   }
 
   body.game-playing .action-row {

@@ -150,13 +150,24 @@ const CORRECT_SOUND_MAX_RATE = 1.6;
 let correctSoundRate = CORRECT_SOUND_BASE_RATE;
 const digitSounds = new Map();
 
+function getSelectedVoiceVariant() {
+  if (karutaAudio && typeof karutaAudio.getVoiceVariant === 'function') {
+    return karutaAudio.getVoiceVariant();
+  }
+  const checked = document.querySelector('input[name="voiceVariant"]:checked');
+  if (checked && checked.value === 'b') return 'b';
+  try { return localStorage.getItem('karutaVoiceVariant') === 'b' ? 'b' : 'a'; } catch (e) { return 'a'; }
+}
+
 function getFallbackDigitSound(digit) {
   const normalized = Number(digit);
   if (!Number.isInteger(normalized) || normalized < 0 || normalized > 9) return null;
-  if (digitSounds.has(normalized)) return digitSounds.get(normalized);
-  const audio = new Audio(`${normalized}.mp3`);
+  const voiceVariant = getSelectedVoiceVariant();
+  const key = `${voiceVariant}-${normalized}`;
+  if (digitSounds.has(key)) return digitSounds.get(key);
+  const audio = new Audio(voiceVariant === 'b' ? `q_${normalized}.mp3` : `${normalized}.mp3`);
   audio.preload = 'auto';
-  digitSounds.set(normalized, audio);
+  digitSounds.set(key, audio);
   return audio;
 }
 
