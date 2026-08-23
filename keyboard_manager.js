@@ -201,6 +201,7 @@
   document.addEventListener('keydown', event => {
     if (canRestartHiscoreWithSpace(event)) {
       event.preventDefault();
+      event.stopPropagation();
       restartHiscoreGame();
       return;
     }
@@ -211,7 +212,7 @@
     if (!isPlayableCard(card)) return;
     event.preventDefault();
     card.click();
-  });
+  }, true);
 
   resetButton?.addEventListener('click', resetKeys);
   showKeyLabelsToggle?.addEventListener('change', event => setShowKeyLabels(event.target.checked));

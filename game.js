@@ -83,6 +83,36 @@ function resetCorrectSoundRate() {
   if (correctSound) correctSound.playbackRate = CORRECT_SOUND_BASE_RATE;
 }
 
+function stopActiveAudio() {
+  if (karutaAudio && typeof karutaAudio.stopAll === 'function') karutaAudio.stopAll();
+  [correctSound, ngSound, startSound, resultSound].forEach(audio => {
+    if (!audio) return;
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+    } catch (e) {}
+  });
+  digitSounds.forEach(audio => {
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+    } catch (e) {}
+  });
+}
+
+function clearActiveRoundState() {
+  roundActive = false;
+  answered = false;
+  readingComplete = false;
+  currentReadingCard = null;
+  cancelReadingTimeouts();
+  cancelCountdown();
+  clearTimeout(roundTimer);
+  clearTimeout(roundResultTimeout);
+  clearInterval(timeDisplayInterval);
+  stopActiveAudio();
+}
+
 function playCorrectSoundForCombo(comboCount) {
   if (!soundEnabled) return;
   const comboBoost = Math.max(0, comboCount - 1) * CORRECT_SOUND_RATE_STEP;
@@ -793,6 +823,7 @@ function quitGame() {
 }
 
 function startGame() {
+  clearActiveRoundState();
   // ★ゲーム開始時のみ結果エリアを隠す（RETRY時は隠さない）
   if (resultDisplayEl) resultDisplayEl.style.display = 'none';
   closeModal(rankingModal);

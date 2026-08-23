@@ -32,6 +32,7 @@
   const buffers = new Map();
   const loading = new Map();
   const fallbackAudios = new Map();
+  const activeSources = new Set();
 
   function normalizeVoiceVariant(value) {
     const normalized = String(value || '').trim().toLowerCase();
@@ -213,8 +214,33 @@
     source.playbackRate.value = playbackRate;
     gain.gain.value = volume;
     source.connect(gain).connect(context.destination);
+    source.addEventListener('ended', () => activeSources.delete(source), { once: true });
+    activeSources.add(source);
     source.start(context.currentTime + delaySeconds);
     return true;
+  }
+
+  function stopAll() {
+    activeSources.forEach(source => {
+      try { source.stop(); } catch (e) {}
+    });
+    activeSources.clear();
+
+    fallbackAudios.forEach(audio => {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch (e) {}
+    });
+
+    Object.values(EFFECT_ELEMENT_IDS).forEach(id => {
+      const audio = document.getElementById(id);
+      if (!audio) return;
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch (e) {}
+    });
   }
 
   function playEffect(name, options = {}) {
@@ -255,7 +281,7 @@
     if (!('serviceWorker' in navigator)) return;
     if (location.protocol === 'file:') return;
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=voiceoption1').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=voiceoption2').catch(() => {});
     });
   }
 
@@ -273,6 +299,7 @@
     prepare,
     playEffect,
     playDigit,
+    stopAll,
     setEnabled,
     setVoiceVariant,
     getVoiceVariant,
