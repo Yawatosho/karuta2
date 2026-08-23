@@ -375,6 +375,175 @@ h1 {
   color: var(--accent-strong);
 }
 
+.keyboard-panel {
+  display: grid;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 8px;
+}
+
+.keyboard-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.keyboard-title {
+  margin: 0;
+  color: var(--muted);
+  font-family: "Bebas Neue", "Noto Sans JP", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+#resetKeyConfig {
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid rgba(34, 83, 95, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+#resetKeyConfig:hover {
+  border-color: rgba(34, 83, 95, 0.24);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--accent-strong);
+}
+
+.key-config-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.key-config-item {
+  display: grid;
+  grid-column: span 2;
+  gap: 3px;
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.key-config-item:nth-child(7) {
+  grid-column: 2 / span 2;
+}
+
+.key-config-item input {
+  width: 100%;
+  min-width: 0;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(34, 83, 95, 0.14);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--accent-strong);
+  font: 900 0.78rem/1 "Noto Sans JP", system-ui, sans-serif;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.key-config-item input:focus {
+  border-color: rgba(34, 83, 95, 0.34);
+  outline: none;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.key-config-status {
+  min-height: 1em;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+}
+
+.key-label-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.66rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.key-label-toggle input {
+  appearance: none;
+  position: relative;
+  width: 28px;
+  height: 16px;
+  margin: 0;
+  border: 1px solid rgba(34, 83, 95, 0.18);
+  border-radius: 999px;
+  background: rgba(225, 240, 245, 0.9);
+  cursor: pointer;
+}
+
+.key-label-toggle input::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 5px rgba(31, 83, 103, 0.16);
+  transition: transform 0.18s;
+}
+
+.key-label-toggle input:checked {
+  background: var(--cyan);
+}
+
+.key-label-toggle input:checked::before {
+  transform: translateX(12px);
+}
+
+
+.card {
+  position: relative;
+}
+
+.key-badge {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  display: inline-flex;
+  min-width: 1.55em;
+  height: 1.55em;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(34, 83, 95, 0.18);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--accent-strong);
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+}
+
+@media (hover: none), (pointer: coarse), (max-width: 760px) {
+  .keyboard-panel,
+  .key-badge {
+    display: none;
+  }
+}
+
 body.game-playing .option-panel {
   display: none;
 }

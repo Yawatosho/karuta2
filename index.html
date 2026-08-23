@@ -54,8 +54,9 @@
   <link rel="preload" href="ng.mp3" as="audio" type="audio/mpeg">
   <link rel="preload" href="start.mp3" as="audio" type="audio/mpeg">
   <link rel="preload" href="result.mp3" as="audio" type="audio/mpeg">
-  <link rel="stylesheet" href="styles.css?v=creditsgames1">
+  <link rel="stylesheet" href="styles.css?v=keyboard3">
   <script src="audio_manager.js?v=voiceoption1" defer></script>
+  <script src="keyboard_manager.js?v=keyboard2" defer></script>
   <script src="mode_loader.js?v=voiceoption1" defer></script>
 </head>
 <body data-mode="hiscore">
@@ -112,6 +113,18 @@
               <span>VOICE B</span>
             </label>
           </fieldset>
+          <section id="keyboardPanel" class="keyboard-panel" aria-label="KEY CONFIG">
+            <div class="keyboard-head">
+              <p class="keyboard-title">KEY CONFIG</p>
+              <button id="resetKeyConfig" type="button">RESET</button>
+            </div>
+            <div id="keyConfigGrid" class="key-config-grid" aria-label="カルタ位置のキー割り当て"></div>
+            <label class="key-label-toggle">
+              <input id="showKeyLabelsToggle" type="checkbox" checked>
+              <span>SHOW KEY LABELS IN GAME</span>
+            </label>
+            <p id="keyConfigStatus" class="key-config-status" aria-live="polite"></p>
+          </section>
         </section>
 
         <section class="cpu-level-panel" aria-label="CPU難易度">
