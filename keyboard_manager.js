@@ -84,11 +84,11 @@
 
   function restartHiscoreGame() {
     const api = window.karutaModes && window.karutaModes.hiscore;
-    if (api && typeof api.resetGame === 'function') {
-      api.resetGame();
+    if (api && typeof api.startGame === 'function') {
+      api.startGame();
       return;
     }
-    document.getElementById('restartButton')?.click();
+    document.getElementById('startButton')?.click();
   }
 
   function getCardByKey(key) {
