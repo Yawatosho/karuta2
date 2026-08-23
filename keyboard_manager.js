@@ -72,6 +72,25 @@
     return true;
   }
 
+  function canRestartHiscoreWithSpace(event) {
+    if (!event || event.repeat) return false;
+    if (event.key !== ' ' && event.code !== 'Space') return false;
+    if (document.body.dataset.mode !== 'hiscore') return false;
+    if (!document.body.classList.contains('game-playing')) return false;
+    if (isModalOpen()) return false;
+    if (isTypingTarget(event.target)) return false;
+    return true;
+  }
+
+  function restartHiscoreGame() {
+    const api = window.karutaModes && window.karutaModes.hiscore;
+    if (api && typeof api.resetGame === 'function') {
+      api.resetGame();
+      return;
+    }
+    document.getElementById('restartButton')?.click();
+  }
+
   function getCardByKey(key) {
     const index = keys.indexOf(key);
     if (index < 0) return null;
@@ -180,6 +199,12 @@
   }
 
   document.addEventListener('keydown', event => {
+    if (canRestartHiscoreWithSpace(event)) {
+      event.preventDefault();
+      restartHiscoreGame();
+      return;
+    }
+
     if (!canUseKeyboardForCards(event)) return;
     const key = normalizeEventKey(event);
     const card = getCardByKey(key);
