@@ -139,6 +139,25 @@ a {
   pointer-events: none;
 }
 
+.ndc100-link {
+  position: absolute;
+  inset-inline-end: 12px;
+  inset-block-end: 12px;
+  display: block;
+  width: 72px;
+  border-radius: 4px;
+}
+
+.ndc100-link img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+body.game-playing .ndc100-link {
+  display: none;
+}
+
 .game-hero {
   display: flex;
   justify-content: center;
@@ -1618,6 +1637,10 @@ ul { padding-left: 1.4em; }
     font-size: 0.68rem;
   }
 
+  .ndc100-link {
+    width: 56px;
+  }
+
   .credits .games-link {
     padding: 0.42em 0.72em;
     font-size: 0.62rem;
@@ -1801,6 +1824,12 @@ ul { padding-left: 1.4em; }
     display: none;
   }
 
+  .ndc100-link {
+    inset-inline-end: 8px;
+    inset-block-end: 6px;
+    width: 48px;
+  }
+
   #karuta {
     display: flex;
     min-height: 0;
@@ -1929,7 +1958,9 @@ ul { padding-left: 1.4em; }
   }
 
   .cpu-level-panel {
+    width: min(100% - 56px, 520px);
     margin: 8px auto 0;
+    margin-inline-start: 0;
     padding: 8px;
   }
 
