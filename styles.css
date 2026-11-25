@@ -117,6 +117,7 @@ a {
 }
 
 .game-shell {
+  --ndc100-size: 92px;
   position: relative;
   z-index: 1;
   min-height: 0;
@@ -144,7 +145,7 @@ a {
   inset-inline-end: 12px;
   inset-block-end: 12px;
   display: block;
-  width: 72px;
+  width: var(--ndc100-size);
   border-radius: 4px;
 }
 
@@ -1575,6 +1576,7 @@ ul { padding-left: 1.4em; }
   }
 
   .game-shell {
+    --ndc100-size: 72px;
     padding: 10px 16px;
   }
 
@@ -1637,13 +1639,20 @@ ul { padding-left: 1.4em; }
     font-size: 0.68rem;
   }
 
-  .ndc100-link {
-    width: 56px;
-  }
-
   .credits .games-link {
     padding: 0.42em 0.72em;
     font-size: 0.62rem;
+  }
+}
+
+@media (min-width: 761px) and (max-height: 640px) {
+  body:not(.game-playing)[data-mode="cpu"] .game-logo {
+    max-height: 10vh;
+  }
+
+  .cpu-level-panel {
+    margin-block: 8px 4px;
+    padding-block: 6px;
   }
 }
 
@@ -1653,7 +1662,10 @@ ul { padding-left: 1.4em; }
     padding-top: 7px;
   }
 
-  .game-shell { padding: 14px; }
+  .game-shell {
+    --ndc100-size: 72px;
+    padding: 14px;
+  }
 
   .game-hero {
     gap: 10px;
@@ -1747,6 +1759,8 @@ ul { padding-left: 1.4em; }
   }
 
   .cpu-level-panel {
+    width: min(calc(100% - var(--ndc100-size) - 8px), 520px);
+    margin-inline-start: 0;
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
@@ -1806,6 +1820,7 @@ ul { padding-left: 1.4em; }
   }
 
   .game-shell {
+    --ndc100-size: 64px;
     display: flex;
     height: auto;
     min-height: 0;
@@ -1827,7 +1842,6 @@ ul { padding-left: 1.4em; }
   .ndc100-link {
     inset-inline-end: 8px;
     inset-block-end: 6px;
-    width: 48px;
   }
 
   #karuta {
@@ -1958,14 +1972,17 @@ ul { padding-left: 1.4em; }
   }
 
   .cpu-level-panel {
-    width: min(100% - 56px, 520px);
-    margin: 8px auto 0;
-    margin-inline-start: 0;
+    margin-block: 8px 0;
     padding: 8px;
   }
 
   .cpu-level-panel label {
     font-size: 1rem;
+  }
+
+  #cpuLevel {
+    padding-inline: 8px;
+    font-size: 0.85rem;
   }
 
   .reader-panel {
